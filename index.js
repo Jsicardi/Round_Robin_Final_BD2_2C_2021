@@ -1,4 +1,3 @@
-const Joi = require('joi');
 const express = require('express');
 
 const app = express();
@@ -25,11 +24,28 @@ async function startDbConnection(){
     neoSession = await ApiUtils.getNeo4JConnection();
 }
 
+//ERROR MESSAGE FUNCTION
+
+function generateError( code , string ){
+    let answer ={};
+    answer.code = code;
+    answer.message = string;
+    return JSON.stringify(answer);
+}
+
 //API ENDPOINTS 
 
 app.get('/api/players', async(req,res)=>{
     res.setHeader("content-type", "application/json");
+
+    const {error} = PlayerApi.validatePlayerPararms(req.query,0); 
+    if(error){
+     //400 Bad Request
+     return res.status(400).send(generateError(400, error.details[0].message));
+    }
+
     const rows = await PlayerApi.getPlayersByParams(req.query,pgClient);
+
     res.send(rows);
 });
 

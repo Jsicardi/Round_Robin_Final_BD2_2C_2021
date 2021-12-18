@@ -1,3 +1,4 @@
+const Joi = require('joi');
 
 class PlayerApi{
 
@@ -123,6 +124,34 @@ class PlayerApi{
         
     }
 
+    //ValidatePlayerQueryParams
+    //0-/api/players
+    static validatePlayerPararms(params,index){
+    
+        let schema;
+        
+        switch(index){
+            case 0:
+                schema = { 
+                    age: Joi.number().min(0),
+                    nationality: Joi.string(), 
+                    preferredFoot: Joi.string(),
+                    valueEUR : Joi.number().min(0),
+                    position : Joi.string(),
+                    remainingTime : Joi.number().min(0),
+                    name : Joi.string(),
+                    page : Joi.number().min(0),
+                    limit : Joi.number().min(0)
+                };
+                break;
+        }
+
+
+        return Joi.validate(params,schema);
+    }
+
+
 }
+
 
 module.exports = PlayerApi;
