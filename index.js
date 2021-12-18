@@ -84,12 +84,12 @@ app.get('/api/recommendedClubs', async (req,res)=>{
 
     let clubs = [];
      await neoSession
-        .run("MATCH (player:Player {name:'" + playerString + "'})--(playedInTeam:Team)--(p2:Player) " +
+        .run("MATCH (player:Player {name:'" + playerString + "'})-[:played_in {year: '2022'}]-(playedInTeam:Team)--(p2:Player) " +
         "WHERE player <> p2 " +
-        "WITH player, COLLECT(DISTINCT p2) as playedWith, COLLECT(DISTINCT playedInTeam) as playedInAlready " +
-        "MATCH (p:Player)--(t:Team) " +
-        "WHERE p IN playedWith AND NOT t IN playedInAlready " +
-        "RETURN DISTINCT t, COUNT(t) " +
+        "WITH COLLECT(DISTINCT p2) as playedWith, COLLECT(DISTINCT playedInTeam) as playedInAlready " +
+        "MATCH s = shortestPath((p:Player)-[:played_in]-(t:Team)) " +       //ShortestPath so as to count a player having played 4 years in a club
+        "WHERE p IN playedWith AND NOT t IN playedInAlready " +             // only as 1 club apparition
+        "RETURN t, COUNT(t) " +
         "ORDER BY COUNT(t) DESC;")
         .then(function(result){
             result.records.forEach(function(record){
