@@ -76,6 +76,34 @@ app.get('/api/playersNeo', async (req,res)=>{
     res.send(players);
 });
 
+app.get('/api/recommendedClubs', async (req,res)=>{
+    const playerString = req.query.player;
+    if (playerString == undefined)
+        return res.status(400).send(generateError(400, "Missing player parameter"));
+
+
+    let clubs = [];
+     await neoSession
+        .run("MATCH (player:Player {name:'" + playerString + "'})--(playedInTeam:Team)--(p2:Player) " +
+        "WHERE player <> p2 " +
+        "WITH player, COLLECT(DISTINCT p2) as playedWith, COLLECT(DISTINCT playedInTeam) as playedInAlready " +
+        "MATCH (p:Player)--(t:Team) " +
+        "WHERE p IN playedWith AND NOT t IN playedInAlready " +
+        "RETURN DISTINCT t, COUNT(t) " +
+        "ORDER BY COUNT(t) DESC;")
+        .then(function(result){
+            result.records.forEach(function(record){
+                clubs.push({
+                    "club" : record._fields[0].properties.name,
+                    "timesMatched" : record._fields[1].low 
+                });
+            });
+        })
+        .catch(function(err){
+            console.log(err);
+        })
+    res.send(clubs);
+});
 
 //PORT
 const port = process.env.PORT || 3000 ;
