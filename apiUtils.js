@@ -27,7 +27,7 @@ class ApiUtils {
     }
 
     static async getNeo4JConnection(){
-        const driver = neo4j.driver('bolt://localhost:7687',neo4j.auth.basic("neo4j", ""));
+        const driver = neo4j.driver('bolt://localhost:7687',neo4j.auth.basic("admin", ""));
         return driver.session();
     }
 
