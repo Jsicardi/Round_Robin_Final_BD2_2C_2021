@@ -107,7 +107,7 @@ app.get('/api/playersNeo', async (req,res)=>{
     res.send(players);
 });
 
-app.get('/api/recommendedClubs', async (req,res)=>{
+app.get('/api/teams/recommended', async (req,res)=>{
     const playerString = req.query.player;
     if (playerString == undefined)
         return res.status(400).send(generateError("Missing player parameter"));
@@ -135,6 +135,34 @@ app.get('/api/recommendedClubs', async (req,res)=>{
         })
     res.send(clubs);
 });
+
+app.get('/api/players/nationalityPartners', async (req,res)=>{
+    const playerString = req.query.player;
+    if (playerString == undefined)
+        return res.status(400).send(generateError("Missing player parameter"));
+
+
+    let players = [];
+     await neoSession
+        .run("MATCH (p2:Player)--(playedInTeam:Team)--(p1:Player {name:'" + playerString + "'})--(nTeam:NationalTeam) " +
+        "WHERE p2.nationality = p1.nationality  AND p1 <> p2 " +
+        "MATCH (p2) " +
+        "WHERE NOT (p2:Player)--(nTeam:NationalTeam) " +
+        "RETURN DISTINCT p2 " +
+        "ORDER BY p2.name;")
+        .then(function(result){
+            result.records.forEach(function(record){
+                players.push({
+                    "name" : record._fields[0].properties.name
+                });
+            });
+        })
+        .catch(function(err){
+            console.log(err);
+        })
+    res.send(players);
+});
+
 
 //PORT
 const port = process.env.PORT || 3000 ;
