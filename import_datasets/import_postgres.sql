@@ -664,6 +664,13 @@ SET team_id = subquery.team_id
 FROM (SELECT * from team) AS subquery
 WHERE team = subquery.team_name;
 
+--Replace nationalities with the ones from fifa 22
+UPDATE tmp_history_total
+SET nationality = subquery.nationality
+FROM (SELECT * from player) AS subquery
+WHERE id = subquery.player_id;
+
+
 --Then, we delete the teams that are not in fifa 22 ( The ones with Club name different than null
 --and clubId null )
 
