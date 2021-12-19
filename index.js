@@ -144,8 +144,8 @@ app.get('/api/players/nationalityPartners', async (req,res)=>{
 
     let players = [];
      await neoSession
-        .run("MATCH (p2:Player)--(playedInTeam:Team)--(p1:Player {name:'" + playerString + "'})--(nTeam:NationalTeam) " +
-        "WHERE p2.nationality = p1.nationality  AND p1 <> p2 " +
+        .run("MATCH (p2:Player)-[y2:played_in]-(playedInTeam:Team)-[y1:played_in]-(p1:Player {name:'" + playerString + "'})--(nTeam:NationalTeam) " +
+        "WHERE p2.nationality = p1.nationality  AND p1 <> p2 AND y1.year = y2.year " +
         "MATCH (p2) " +
         "WHERE NOT (p2:Player)--(nTeam:NationalTeam) " +
         "RETURN DISTINCT p2 " +
@@ -162,6 +162,35 @@ app.get('/api/players/nationalityPartners', async (req,res)=>{
         })
     res.send(players);
 });
+
+app.get('/api/players/degrees', async (req,res)=>{
+    const playerString = req.query.player;
+    if (playerString == undefined)
+        return res.status(400).send(generateError("Missing player parameter"));
+    const degreesString = req.query.degrees;
+    if (degreesString == undefined)
+        return res.status(400).send(generateError("Missing degrees parameter"));
+    const degreesNumber = parseInt(degreesString);
+    if (isNaN(degreesNumber) || degreesNumber < 1 || degreesNumber > 6)
+        return res.status(400).send(generateError("Invalid degrees value, should be an integer between 1 and 6"));
+
+    let players = [];
+     await neoSession
+        .run("MATCH (player:Player {name:'" + playerString + "'})-[*1.." + 2*degreesNumber + "]-(p2:Player) " +   //2 * porque hay 2 saltos entre players
+        "RETURN DISTINCT p2;")
+        .then(function(result){
+            result.records.forEach(function(record){
+                players.push({
+                    "name" : record._fields[0].properties.name
+                });
+            });
+        })
+        .catch(function(err){
+            console.log(err);
+        })
+    res.send(players);
+});
+
 
 
 //PORT
