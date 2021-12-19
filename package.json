@@ -18,9 +18,11 @@
   },
   "homepage": "https://github.com/Jsicardi/Round_Robin_Final_BD2_2C_2021#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "joi": "^13.7.0",
     "neo4j-driver": "^4.4.1",
-    "pg": "^8.7.1"
+    "pg": "^8.7.1",
+    "swagger-ui-express": "^4.3.0"
   }
 }

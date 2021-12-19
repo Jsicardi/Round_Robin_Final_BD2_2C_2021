@@ -1,0 +1,213 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "This is an API to query about FIFA players and teams exposing some interesting functionalities that aim to be useful in real-life scenarios. This project was developed as a final exam for 'Base de Datos 2' at ITBA",
+    "version": "1.0.0",
+    "title": "FInest Football Analizer",
+    "contact": {
+      "name": "Round Robin (Quintairos, Revich, Sicardi)"
+    }
+  },
+  "externalDocs": {
+    "description": "Project repository",
+    "url": "https://github.com/Jsicardi/Round_Robin_Final_BD2_2C_2021"
+  },
+  "host": "localhost:3000",
+  "basePath": "/api",
+  "tags": [
+    {
+      "name": "players",
+      "description": "Everything about players"
+    },
+    {
+      "name": "teams",
+      "description": "Everything about teams"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/players/nationalityPartners": {
+      "get": {
+        "tags": [
+          "players"
+        ],
+        "summary": "Finds recommendations for national teams",
+        "description": "Return players that play or have played with players that are currently representing their national team",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "player",
+            "in": "query",
+            "description": "Player name that currently plays in national team to search for his partners",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Player1"
+              },
+              "example": [
+                {
+                  "name": "Erik Lamela"
+                },
+                {
+                  "name": "Lucas Ocampos"
+                },
+                {
+                  "name": "José Luis Palomino"
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Missing player parameter"
+          }
+        }
+      }
+    },
+    "/players/degrees": {
+      "get": {
+        "tags": [
+          "players"
+        ],
+        "summary": "N degrees of player (Six degrees of Bacon)",
+        "description": "Return players that are up to n jumps away from the player passed. (1 degree are players that played with player passed. 2 degrees are the 1 degree players and players 1 degree away from them. And so on.)",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "player",
+            "in": "query",
+            "description": "Player name to calculate degrees of",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "degrees",
+            "in": "query",
+            "description": "Degrees requested",
+            "required": true,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Player1"
+              },
+              "example": [
+                {
+                  "name": "Sergio Ramos García"
+                },
+                {
+                  "name": "Mauro Icardi"
+                },
+                {
+                  "name": "Kylian Mbappé"
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Missing player parameter - Missing degrees parameter - Invalid degrees value, should be an integer between 1 and 6"
+          }
+        }
+      }
+    },
+    "/teams/recommended": {
+      "get": {
+        "tags": [
+          "teams"
+        ],
+        "summary": "Finds recommended teams for a player to play in",
+        "description": "Return teams where current player's partners have played in the past",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "player",
+            "in": "query",
+            "description": "Player name that is looking for team recommendations",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TeamAndCount"
+              },
+              "example": [
+                {
+                  "club": "Real Madrid CF",
+                  "timesMatched": 4
+                },
+                {
+                  "club": "AS Monaco",
+                  "timesMatched": 4
+                },
+                {
+                  "club": "AC Milan",
+                  "timesMatched": 3
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Missing player parameter"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Player1": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Erik Lamela"
+        }
+      }
+    },
+    "TeamAndCount": {
+      "type": "object",
+      "required": [
+        "club",
+        "timesMatched"
+      ],
+      "properties": {
+        "club": {
+          "type": "string",
+          "example": "Real Madrid CF"
+        },
+        "timesMatched": {
+          "type": "integer",
+          "example": 4
+        }
+      }
+    }
+  }
+}

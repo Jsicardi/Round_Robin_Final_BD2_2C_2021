@@ -1,7 +1,9 @@
 const express = require('express');
+const cors = require('cors');
+var swaggerUi = require('swagger-ui-express'),
+    swaggerDocument = require('./swagger.json');
 
 const app = express();
-
 
 //IMPORTS 
 
@@ -11,6 +13,8 @@ const TeamApi = require('./team');
 
 
 app.use(express.json());
+app.use(cors())
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 
 // //BD CONNECTION FUNCTION
@@ -151,8 +155,9 @@ app.get('/api/teams/recommended', async (req,res)=>{
 
     let clubs = [];
      await neoSession
-        .run("MATCH (player:Player {name:'" + playerString + "'})-[:played_in {year: '2022'}]-(playedInTeam:Team)--(p2:Player) " +
+        .run("MATCH (player:Player {name:'" + playerString + "'})-[:played_in {year: '2022'}]-(:Team)--(p2:Player) " +
         "WHERE player <> p2 " +
+        "MATCH (player:Player)--(playedInTeam:Team) " +
         "WITH COLLECT(DISTINCT p2) as playedWith, COLLECT(DISTINCT playedInTeam) as playedInAlready " +
         "MATCH s = shortestPath((p:Player)-[:played_in]-(t:Team)) " +       //ShortestPath so as to count a player having played 4 years in a club
         "WHERE p IN playedWith AND NOT t IN playedInAlready " +             // only as 1 club apparition
