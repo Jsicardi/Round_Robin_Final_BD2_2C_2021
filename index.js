@@ -7,6 +7,7 @@ const app = express();
 
 const PlayerApi = require('./player');
 const ApiUtils = require('./apiUtils');
+const TeamApi = require('./team');
 
 
 app.use(express.json());
@@ -77,6 +78,41 @@ app.get('/api/players/similar',async(req,res)=>{
 
 
     res.send(similarPlayersRows);
+
+});
+
+app.get('/api/leagues', async(req,res)=>{
+    res.setHeader("content-type", "application/json");
+
+    //Check if the structure of the query params are ok, otherwise it returns 400
+    const {error} = TeamApi.validateTeamPararms(req.query,0);
+    if(error){
+     //400 Bad Request
+     return res.status(400).send(generateError(error.details[0].message));
+    }
+
+    //Check if the values of the query params are ok, otherwise it returns 400
+    const leagueParametersValid = TeamApi.validateTopLeaguesParams(req.query);
+
+    console.log(`leagueParametersValid : ${leagueParametersValid}`);
+
+    if(!leagueParametersValid){
+        return res.status(400).send(generateError('Invalid parameters for the league\'s top'));
+    }
+
+    //If nationality query param is defined, check if it exists, otherwise return 404
+    if(req.query.nationality!==undefined){
+        const nationality = req.query.nationality.toLowerCase();
+        const playerNationalityRows = await PlayerApi.getPlayersByNationality(nationality,pgClient);
+        if(playerNationalityRows.length==0){
+            return res.status(404).send(generateError("Players with the current nationality do not exist"));
+        }
+    }
+
+    
+    const topLeaguesRows = await TeamApi.getTopLeagues(req.query,pgClient);
+
+    res.send(topLeaguesRows);
 
 });
 

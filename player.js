@@ -1,5 +1,4 @@
 const Joi = require('joi');
-const { Query } = require('pg/lib/client');
 
 class PlayerApi{
 
@@ -82,7 +81,7 @@ class PlayerApi{
         if(params.remainingTime!==undefined){
             const currentYear = new Date().getFullYear();
             const remainingTime = parseInt(params.remainingTime);
-            console.log('Remaining time : '+remainingTime);
+
             if(paramsQuantity===0){
                 query = query.concat("WHERE ")
             }
@@ -147,8 +146,6 @@ class PlayerApi{
         + abs(p.passing_total-aux.passing_total) + abs(p.dribbling_total-aux.dribbling_total) + abs(p.defending_total-aux.defending_total)
         + abs(p.physicality_total-aux.physicality_total) LIMIT ${limit} OFFSET ((${page}-1) * ${limit})`;
 
-        console.log(`query : ${query}`);
-
         try{
             const results = await client.query(query);
             return results.rows;
@@ -163,7 +160,16 @@ class PlayerApi{
     static async getPlayerByName(name,client){  
         try{
             const results = await client.query(`SELECT * FROM player WHERE lower(fullname)=lower('${name}')`);
-            console.log(results);
+            return results.rows;
+        }
+        catch(e){
+            console.log(e);
+        }
+    }
+
+    static async getPlayersByNationality(nationality,client){
+        try{
+            const results = await client.query(`SELECT * FROM player WHERE lower(nationality)=lower('${nationality}')`);
             return results.rows;
         }
         catch(e){
@@ -187,16 +193,16 @@ class PlayerApi{
                     position : Joi.string(),
                     remainingTime : Joi.number().min(0),
                     name : Joi.string(),
-                    page : Joi.number().min(0),
-                    limit : Joi.number().min(0)
+                    page : Joi.number().min(1),
+                    limit : Joi.number().min(1)
                 };
                 break;
             
             case 1:
                 schema = {
                     name : Joi.string().required(),
-                    page : Joi.number().min(0),
-                    limit : Joi.number().min(0)
+                    page : Joi.number().min(1),
+                    limit : Joi.number().min(1)
                 };
         }
 
