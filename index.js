@@ -33,7 +33,7 @@ async function startDbConnection(){
 
 function generateError( string ){
     let answer ={};
-    answer.message = string;
+    answer.message = string.replace(/"/g, '\'');
     return JSON.stringify(answer);
 }
 
@@ -62,23 +62,8 @@ app.get('/api/players/similar',async(req,res)=>{
      return res.status(400).send(generateError(error.details[0].message));
     }
 
-
-    //Replace the consecutive white-space characters a single white-space
-    let playerName = req.query.name.replace(/\s+/g, " ");
-    
-    //Remove the white-space characters at the beginning and at the end of the name
-    playerName = playerName.replace(/^\s+|\s+$/g, "");
-
-    //Check if it exists a player in BD with that name
-    const playerRows = await PlayerApi.getPlayerByName(playerName,pgClient);
-    
-    //If it does not exist, a 404 error is returned
-    if(playerRows.length == 0){
-        return res.status(404).send(generateError("The player with the current name does not exist"));
-    }
-
-    //Otherwise, return the similar players
-    const similarPlayersRows = await PlayerApi.getSimilarPlayersByName(playerName,req.query.page,req.query.limit,pgClient);
+    //Return the similar players
+    const similarPlayersRows = await PlayerApi.getSimilarPlayersByName(req.query.name,req.query.page,req.query.limit,pgClient);
 
 
     res.send(similarPlayersRows);

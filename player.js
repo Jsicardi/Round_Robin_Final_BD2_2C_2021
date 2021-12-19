@@ -52,22 +52,6 @@ class PlayerApi{
             query = query.concat(`value_eur <= ${params.valueEUR} `);
             paramsQuantity++;
         }
-        if(params.nationalTeam!==undefined){
-            let playsInNationalTeam = params.nationalTeam.toLowerCase() === 'true';
-            if(paramsQuantity===0){
-                query = query.concat("WHERE ")
-            }
-            else{
-                query = query.concat("AND ")
-            }
-            if(playsInNationalTeam){
-                query = query.concat("national_team_id IS NOT NULL ");
-            }
-            else{
-                query = query.concat("national_team_id IS NULL ");
-            }
-            paramsQuantity++;
-        }
         if(params.position !== undefined){
             if(paramsQuantity===0){
                 query = query.concat("WHERE ")
@@ -110,7 +94,13 @@ class PlayerApi{
             page = parseInt(params.page);
         }
 
-        query = query.concat(`ORDER BY total_score DESC LIMIT ${limit} OFFSET ((${page}-1) * ${limit})`);
+        query = query.concat("ORDER BY ");
+
+        if(params.name!==undefined){
+            query = query.concat(`SIMILARITY(metaphone('${params.name}',10),metaphone(fullname,10)) DESC, `);
+        }
+
+        query = query.concat(`total_score DESC LIMIT ${limit} OFFSET ((${page}-1) * ${limit})`);
 
         try{
             const results = await client.query(query);
@@ -138,10 +128,22 @@ class PlayerApi{
             limit = parseInt(limitParam);
         }
 
+        //Get the best result of fuzzy searching using the method 'getPlayerByParams()'
+
+        let params = {};
+        params.name = name;
+        params.limit = 1;
+
+        const fuzzySearchResultRows = await this.getPlayersByParams(params,client);
+
+        //Use the id of the player with most similar name to do the query
+
+        const similarPlayerId = fuzzySearchResultRows[0].player_id;
+        
         let query = `SELECT p.player_id,p.fullname,p.age,p.photo_url as photo, p.nationality, p.total_score, p.positions, p.best_position, p.team_id, p.value_eur, p.contract_until, p.national_team_id, p.preferred_foot, p.pace_total, p.shooting_total, p.passing_total, p.dribbling_total,p.defending_total, p.physicality_total
         FROM (SELECT player_id, best_position, pace_total, shooting_total, passing_total,
         dribbling_total,defending_total, physicality_total FROM player WHERE player_id=(SELECT player_id FROM player WHERE
-        lower(fullname)=lower('${name}'))) as aux, player p WHERE p.best_position=aux.best_position AND p.player_id<>aux.player_id
+        player_id = ${similarPlayerId})) as aux, player p WHERE p.best_position=aux.best_position AND p.player_id<>aux.player_id
         ORDER BY abs(p.pace_total-aux.pace_total) + abs(p.shooting_total-aux.shooting_total)
         + abs(p.passing_total-aux.passing_total) + abs(p.dribbling_total-aux.dribbling_total) + abs(p.defending_total-aux.defending_total)
         + abs(p.physicality_total-aux.physicality_total) LIMIT ${limit} OFFSET ((${page}-1) * ${limit})`;
