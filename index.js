@@ -26,9 +26,8 @@ async function startDbConnection(){
 
 //ERROR MESSAGE FUNCTION
 
-function generateError( code , string ){
+function generateError( string ){
     let answer ={};
-    answer.code = code;
     answer.message = string;
     return JSON.stringify(answer);
 }
@@ -41,12 +40,44 @@ app.get('/api/players', async(req,res)=>{
     const {error} = PlayerApi.validatePlayerPararms(req.query,0); 
     if(error){
      //400 Bad Request
-     return res.status(400).send(generateError(400, error.details[0].message));
+     return res.status(400).send(generateError(error.details[0].message));
     }
 
     const rows = await PlayerApi.getPlayersByParams(req.query,pgClient);
 
     res.send(rows);
+});
+
+app.get('/api/players/similar',async(req,res)=>{
+    res.setHeader("content-type", "application/json");
+
+    const {error} = PlayerApi.validatePlayerPararms(req.query,1); 
+    if(error){
+     //400 Bad Request
+     return res.status(400).send(generateError(error.details[0].message));
+    }
+
+
+    //Replace the consecutive white-space characters a single white-space
+    let playerName = req.query.name.replace(/\s+/g, " ");
+    
+    //Remove the white-space characters at the beginning and at the end of the name
+    playerName = playerName.replace(/^\s+|\s+$/g, "");
+
+    //Check if it exists a player in BD with that name
+    const playerRows = await PlayerApi.getPlayerByName(playerName,pgClient);
+    
+    //If it does not exist, a 404 error is returned
+    if(playerRows.length == 0){
+        return res.status(404).send(generateError("The player with the current name does not exist"));
+    }
+
+    //Otherwise, return the similar players
+    const similarPlayersRows = await PlayerApi.getSimilarPlayersByName(playerName,req.query.page,req.query.limit,pgClient);
+
+
+    res.send(similarPlayersRows);
+
 });
 
 app.get('/api/teams', async(req,res)=>{
@@ -79,7 +110,7 @@ app.get('/api/playersNeo', async (req,res)=>{
 app.get('/api/recommendedClubs', async (req,res)=>{
     const playerString = req.query.player;
     if (playerString == undefined)
-        return res.status(400).send(generateError(400, "Missing player parameter"));
+        return res.status(400).send(generateError("Missing player parameter"));
 
 
     let clubs = [];
