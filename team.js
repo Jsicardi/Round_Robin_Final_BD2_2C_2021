@@ -15,26 +15,25 @@ class TeamApi {
             limit = parseInt(limitParam);
         }
 
-        let query = "SELECT league,COUNT(team_id) AS team_count FROM team GROUP BY league ORDER BY team_count DESC ";
+        let query = "SELECT league,COUNT(team_id) AS team_count,ROUND(AVG(transfer_budget),2) AS total_transfer_budget,ROUND(AVG(team_average_age)) AS average_age, COUNT(player_id) AS national_team_players_count FROM team NATURAL JOIN player WHERE national_team_id IS NOT NULL GROUP BY league ORDER BY ";
 
         if(params.sortBy!==undefined){
             const sortByParam = params.sortBy.toLowerCase();
             switch(sortByParam){
                 case 'transferbudget':
-                    query = "SELECT league,ROUND(AVG(transfer_budget),2) AS total_transfer_budget FROM team GROUP BY league ORDER BY total_transfer_budget DESC ";
+                    query = query.concat("total_transfer_budget DESC ");
                     break;
                 case 'teamaverageage':
-                    query = "SELECT league,ROUND(AVG(team_average_age)) AS average_age FROM team GROUP BY league ORDER BY average_age DESC ";
+                    // query = "SELECT league,ROUND(AVG(team_average_age)) AS average_age FROM team GROUP BY league ORDER BY average_age DESC ";
+                    query = query.concat("average_age DESC ");
                     break;
                 case 'nationalteamplayers':
-                    query = "SELECT league,COUNT(player_id) AS national_team_players_count FROM team NATURAL JOIN player WHERE national_team_id IS NOT NULL GROUP BY league ORDER BY national_team_players_count DESC ";
-                    break;
-                case 'country':
-                    const nationality = params.nationality.toLowerCase();
-                    query = `SELECT league,COUNT(player_id) AS country_players_count FROM team NATURAL JOIN player
-                    WHERE lower(nationality)=lower('${nationality}') GROUP BY league ORDER BY country_players_count DESC `;
+                    query = query.concat("national_team_players_count DESC ");
                     break;
             }
+        }
+        else{
+            query = query.concat("team_count DESC ");
         }
 
         query = query.concat(`LIMIT ${limit}`);
@@ -57,18 +56,13 @@ class TeamApi {
 
             //Check if the parameter is one of the sortBy values
 
-            const topLeaguesSortByParameters = ['transferBudget','teamAverageAge','nationalTeamPlayers','country'];
+            const topLeaguesSortByParameters = ['transferBudget','teamAverageAge','nationalTeamPlayers'];
 
             let i;
             let elem;
             for(i=0;i<topLeaguesSortByParameters.length;i++){
                 elem = topLeaguesSortByParameters[i].toLowerCase();
-                if(sortByValue===elem.toLowerCase()){
-                    //if the value is 'country', 'nationality' query param must be defined. Otherwise, must be undefined
-                    if((sortByValue==='country' && params.nationality===undefined) || (sortByValue!=='country' && params.nationality!==undefined)){
-                       return false;
-                    }
-                    
+                if(sortByValue===elem.toLowerCase()){                    
                     return true;
                 }
             }
@@ -93,7 +87,6 @@ class TeamApi {
             case 0:
                 schema = { 
                     sortBy : Joi.string(),
-                    nationality : Joi.string(),
                     page : Joi.number().min(1),
                     limit : Joi.number().min(1)
                 };

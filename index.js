@@ -88,16 +88,6 @@ app.get('/api/leagues', async(req,res)=>{
         return res.status(400).send(generateError('Invalid parameters for the league\'s top'));
     }
 
-    //If nationality query param is defined, check if it exists, otherwise return 404
-    if(req.query.nationality!==undefined){
-        const nationality = req.query.nationality.toLowerCase();
-        const playerNationalityRows = await PlayerApi.getPlayersByNationality(nationality,pgClient);
-        if(playerNationalityRows.length==0){
-            return res.status(404).send(generateError("Players with the current nationality do not exist"));
-        }
-    }
-
-    
     const topLeaguesRows = await TeamApi.getTopLeagues(req.query,pgClient);
 
     res.send(topLeaguesRows);
