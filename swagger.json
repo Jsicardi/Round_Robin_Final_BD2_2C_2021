@@ -28,6 +28,264 @@
     "http"
   ],
   "paths": {
+    "/players": {
+      "get": {
+        "tags": [
+          "players"
+        ],
+        "summary": "Finds players filtered by different attributes",
+        "description": "Return players that fulfils the different qualities paginated",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "age",
+            "in": "query",
+            "description": "The upper-limit age of the players",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "nationality",
+            "in": "query",
+            "description": "The nationality of the players",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "preferredFoot",
+            "in": "query",
+            "description": "The preferred foot of the players ('Left' or 'Right')",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "valueEUR",
+            "in": "query",
+            "description": "The lower-limit value in Euros of the players",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "position",
+            "in": "query",
+            "description": "A position a player can play from",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "remainingTime",
+            "in": "query",
+            "description": "The upper-limit of years remaining of the player in the team",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name of the player (Returns players with name similar to this)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The required page of players",
+            "required": false,
+            "type": "integer",
+            "default": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The limit of players by page",
+            "required": false,
+            "type": "integer",
+            "default": 3
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PlayerFull"
+              },
+              "example": [
+                {
+                  "player_id": 204485,
+                  "fullname": "Riyad Mahrez",
+                  "age": 30,
+                  "photo": "https://photo.png",
+                  "nationality": "Algeria",
+                  "total_score": 86,
+                  "positions": "['RW', 'RM']",
+                  "bestPosition": "RW",
+                  "team_id": 10,
+                  "value_eur": 65500000,
+                  "contract_until": 2023,
+                  "national_team_id": 4,
+                  "preferred_foot": "Left",
+                  "pace_total": 81,
+                  "shooting_total": 80,
+                  "passing_total": 81,
+                  "dribbling_total": 90,
+                  "defending_total": 38,
+                  "physicality_total": 60
+                },
+                {
+                  "player_id": 200260,
+                  "fullname": "Steven Berghuis",
+                  "age": 29,
+                  "photo": "https://photo.png",
+                  "nationality": "Netherlands",
+                  "total_score": 81,
+                  "positions": "['RW']",
+                  "bestPosition": "RW",
+                  "team_id": 245,
+                  "value_eur": 65500000,
+                  "contract_until": 2023,
+                  "national_team_id": 4,
+                  "preferred_foot": "Left",
+                  "pace_total": 80,
+                  "shooting_total": 81,
+                  "passing_total": 82,
+                  "dribbling_total": 82,
+                  "defending_total": 36,
+                  "physicality_total": 66
+                },
+                {
+                  "player_id": 183898,
+                  "fullname": "Ángel Di María",
+                  "age": 33,
+                  "photo": "https://photo.png",
+                  "nationality": "Argentina",
+                  "total_score": 87,
+                  "positions": "['RW', 'LW']",
+                  "bestPosition": "RW",
+                  "team_id": 73,
+                  "value_eur": 65500000,
+                  "contract_until": 2023,
+                  "national_team_id": 1369,
+                  "preferred_foot": "Left",
+                  "pace_total": 83,
+                  "shooting_total": 81,
+                  "passing_total": 86,
+                  "dribbling_total": 88,
+                  "defending_total": 48,
+                  "physicality_total": 69
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request ( For example age < 0 )"
+          }
+        }
+      }
+    },
+    "/players/similar": {
+      "get": {
+        "tags": [
+          "players"
+        ],
+        "summary": "Finds players with the same playing style as the one passed",
+        "description": "Return players that perform the closest to the one passed in FIFA's categories (Pace, dribbling, shooting, passing, defending, physicality) and plays in the same position",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Player name trying to find similar players for",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PlayerFull"
+              },
+              "example": [
+                {
+                  "player_id": 204485,
+                  "fullname": "Riyad Mahrez",
+                  "age": 30,
+                  "photo": "https://photo.png",
+                  "nationality": "Algeria",
+                  "total_score": 86,
+                  "positions": "['RW', 'RM']",
+                  "bestPosition": "RW",
+                  "team_id": 10,
+                  "value_eur": 65500000,
+                  "contract_until": 2023,
+                  "national_team_id": 4,
+                  "preferred_foot": "Left",
+                  "pace_total": 81,
+                  "shooting_total": 80,
+                  "passing_total": 81,
+                  "dribbling_total": 90,
+                  "defending_total": 38,
+                  "physicality_total": 60
+                },
+                {
+                  "player_id": 200260,
+                  "fullname": "Steven Berghuis",
+                  "age": 29,
+                  "photo": "https://photo.png",
+                  "nationality": "Netherlands",
+                  "total_score": 81,
+                  "positions": "['RW']",
+                  "bestPosition": "RW",
+                  "team_id": 245,
+                  "value_eur": 65500000,
+                  "contract_until": 2023,
+                  "national_team_id": 4,
+                  "preferred_foot": "Left",
+                  "pace_total": 80,
+                  "shooting_total": 81,
+                  "passing_total": 82,
+                  "dribbling_total": 82,
+                  "defending_total": 36,
+                  "physicality_total": 66
+                },
+                {
+                  "player_id": 183898,
+                  "fullname": "Ángel Di María",
+                  "age": 33,
+                  "photo": "https://photo.png",
+                  "nationality": "Argentina",
+                  "total_score": 87,
+                  "positions": "['RW', 'LW']",
+                  "bestPosition": "RW",
+                  "team_id": 73,
+                  "value_eur": 65500000,
+                  "contract_until": 2023,
+                  "national_team_id": 1369,
+                  "preferred_foot": "Left",
+                  "pace_total": 83,
+                  "shooting_total": 81,
+                  "passing_total": 86,
+                  "dribbling_total": 88,
+                  "defending_total": 48,
+                  "physicality_total": 69
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
     "/players/nationalityPartners": {
       "get": {
         "tags": [
@@ -189,6 +447,93 @@
         "name": {
           "type": "string",
           "example": "Erik Lamela"
+        }
+      }
+    },
+    "PlayerFull": {
+      "type": "object",
+      "properties": {
+        "player_id": {
+          "type": "integer",
+          "example": 204485
+        },
+        "fullname": {
+          "type": "string",
+          "example": "Riyad Mahrez"
+        },
+        "age": {
+          "type": "integer",
+          "example": 30
+        },
+        "photo": {
+          "type": "string",
+          "example": "https://photo.png"
+        },
+        "nationality": {
+          "type": "string",
+          "example": "Algeria"
+        },
+        "total_score": {
+          "type": "integer",
+          "example": 86
+        },
+        "positions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "RW",
+            "RM"
+          ]
+        },
+        "bestPosition": {
+          "type": "string",
+          "example": "RW"
+        },
+        "team_id": {
+          "type": "integer",
+          "example": 10
+        },
+        "value_eur": {
+          "type": "integer",
+          "example": 65500000
+        },
+        "contract_until": {
+          "type": "integer",
+          "example": 2023
+        },
+        "national_team_id": {
+          "type": "integer",
+          "example": 4
+        },
+        "preferred_foot": {
+          "type": "string",
+          "example": "Left"
+        },
+        "pace_total": {
+          "type": "integer",
+          "example": 81
+        },
+        "shooting_total": {
+          "type": "integer",
+          "example": 80
+        },
+        "passing_total": {
+          "type": "integer",
+          "example": 81
+        },
+        "dribbling_total": {
+          "type": "integer",
+          "example": 90
+        },
+        "defending_total": {
+          "type": "integer",
+          "example": 38
+        },
+        "physicality_total": {
+          "type": "integer",
+          "example": 60
         }
       }
     },

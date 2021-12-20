@@ -83,7 +83,6 @@ app.get('/api/leagues', async(req,res)=>{
     //Check if the values of the query params are ok, otherwise it returns 400
     const leagueParametersValid = TeamApi.validateTopLeaguesParams(req.query);
 
-    console.log(`leagueParametersValid : ${leagueParametersValid}`);
 
     if(!leagueParametersValid){
         return res.status(400).send(generateError('Invalid parameters for the league\'s top'));
@@ -108,28 +107,6 @@ app.get('/api/leagues', async(req,res)=>{
 app.get('/api/teams', async(req,res)=>{
     const rows = await (await pgClient.query("SELECT * FROM team WHERE league='Argentina Primera División'")).rows;
     res.send(JSON.stringify(rows));
-});
-
-app.get('/api/playersNeo', async (req,res)=>{
-    let players = [];
-     await neoSession
-        .run('MATCH (p:Player)-[r:represents]->(nt:NationalTeam{name:\'Argentina\'}) return p LIMIT 25')
-        .then(function(result){
-            result.records.forEach(function(record){
-                console.log(record._fields[0].properties);
-                // console.log('Players antes')
-                players.push({
-                    "playerId" : record._fields[0].properties.player_id,
-                    "name" : record._fields[0].properties.name
-                });
-                // console.log('Players despues')
-            });
-        })
-        .catch(function(err){
-            console.log(err);
-        })
-    // console.log(players);    
-    res.send(players);
 });
 
 app.get('/api/teams/recommended', async (req,res)=>{
