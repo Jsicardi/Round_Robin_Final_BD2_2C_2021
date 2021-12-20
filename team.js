@@ -15,13 +15,15 @@ class TeamApi {
             limit = parseInt(limitParam);
         }
 
-        let query = "SELECT league,COUNT(team_id) AS team_count,ROUND(AVG(transfer_budget),2) AS total_transfer_budget,ROUND(AVG(team_average_age)) AS average_age, COUNT(player_id) AS national_team_players_count FROM team NATURAL JOIN player WHERE national_team_id IS NOT NULL GROUP BY league ORDER BY ";
+
+        let query = "SELECT league,COUNT(distinct team_id) AS team_count,ROUND(AVG(transfer_budget),2) AS average_transfer_budget,ROUND(AVG(team_average_age)) AS average_age, p_count AS national_team_players_count FROM team NATURAL JOIN player NATURAL JOIN ( " + 
+        "SELECT league, COUNT(player_id) as p_count FROM team NATURAL JOIN player WHERE national_team_id IS NOT NULL GROUP BY league) as aux GROUP BY league, p_count ORDER BY ";
 
         if(params.sortBy!==undefined){
             const sortByParam = params.sortBy.toLowerCase();
             switch(sortByParam){
                 case 'transferbudget':
-                    query = query.concat("total_transfer_budget DESC ");
+                    query = query.concat("average_transfer_budget DESC ");
                     break;
                 case 'teamaverageage':
                     // query = "SELECT league,ROUND(AVG(team_average_age)) AS average_age FROM team GROUP BY league ORDER BY average_age DESC ";

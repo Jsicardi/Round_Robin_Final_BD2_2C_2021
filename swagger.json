@@ -22,6 +22,10 @@
     {
       "name": "teams",
       "description": "Everything about teams"
+    },
+    {
+      "name": "leagues",
+      "description": "Everything about leagues"
     }
   ],
   "schemes": [
@@ -34,7 +38,7 @@
           "players"
         ],
         "summary": "Finds players filtered by different attributes",
-        "description": "Return players that fulfils the different qualities paginated",
+        "description": "Return players that fulfill the different qualities paginated",
         "produces": [
           "application/json"
         ],
@@ -435,6 +439,72 @@
           }
         }
       }
+    },
+    "/leagues": {
+      "get": {
+        "tags": [
+          "leagues"
+        ],
+        "summary": "Finds leagues sorted by criteria passed",
+        "description": "Return leagues that fulfill the different qualities paginated",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Attribute to sort by",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The limit of leagues by page",
+            "required": false,
+            "type": "integer",
+            "default": 3
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/League"
+              },
+              "example": [
+                {
+                  "league": "English Premier League",
+                  "team_count": "20",
+                  "average_transfer_budget": "57798589.34",
+                  "average_age": "25",
+                  "national_team_players_count": "128"
+                },
+                {
+                  "league": "Spain Primera Division",
+                  "team_count": "20",
+                  "average_transfer_budget": "30563022.51",
+                  "average_age": "26",
+                  "national_team_players_count": "50"
+                },
+                {
+                  "league": "German 1. Bundesliga",
+                  "team_count": "18",
+                  "average_transfer_budget": "27935218.98",
+                  "average_age": "24",
+                  "national_team_players_count": "71"
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request ( For example invalid query parameter )"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -551,6 +621,38 @@
         "timesMatched": {
           "type": "integer",
           "example": 4
+        }
+      }
+    },
+    "League": {
+      "type": "object",
+      "required": [
+        "league",
+        "team_count",
+        "total_transfer_budget",
+        "average_age",
+        "national_team_players_count"
+      ],
+      "properties": {
+        "league": {
+          "type": "string",
+          "example": "Chinese Super League"
+        },
+        "team_count": {
+          "type": "string",
+          "example": "24"
+        },
+        "average_transfer_budget": {
+          "type": "string",
+          "example": "10150000.00"
+        },
+        "average_age": {
+          "type": "integer",
+          "example": "27"
+        },
+        "national_team_players_count": {
+          "type": "string",
+          "example": "24"
         }
       }
     }
