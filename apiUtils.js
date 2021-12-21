@@ -26,7 +26,7 @@ class ApiUtils {
 
     }
 
-    static async getNeo4JConnection(){
+    static getNeo4JConnection(){
         return neo4j.driver('bolt://localhost:7687',neo4j.auth.basic("neo4j", "Abcdefgh1."));
     }
 

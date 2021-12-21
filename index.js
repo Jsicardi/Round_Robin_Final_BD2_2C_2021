@@ -26,7 +26,7 @@ startDbConnection();
 
 async function startDbConnection(){
     pgClient = await ApiUtils.getPostgreSQLConnection();
-    neoClient = await ApiUtils.getNeo4JConnection();
+    neoClient = ApiUtils.getNeo4JConnection();
 }
 
 //ERROR MESSAGE FUNCTION
@@ -104,19 +104,30 @@ app.get('/api/teams/recommended', async (req,res)=>{
     if (playerString == undefined)
         return res.status(400).send(generateError("Missing player parameter"));
 
+    const limitString = req.query.limit;
+    const limitNumber = parseInt(limitString);
+    if (limitString != undefined && (isNaN(limitNumber) || limitNumber < 1))
+        return res.status(400).send(generateError("Invalid limit value, should be a positive integer"));
+
+
+    let query = "MATCH (player:Player {name:'" + playerString + "'})-[:played_in {year: '2022'}]-(:Team)--(p2:Player) " +
+    "WHERE player <> p2 " +
+    "MATCH (player:Player)--(playedInTeam:Team) " +
+    "WITH COLLECT(DISTINCT p2) as playedWith, COLLECT(DISTINCT playedInTeam) as playedInAlready " +
+    "MATCH s = shortestPath((p:Player)-[:played_in]-(t:Team)) " +       //ShortestPath so as to count a player having played 4 years in a club
+    "WHERE p IN playedWith AND NOT t IN playedInAlready " +             // only as 1 club apparition
+    "RETURN t, COUNT(t) " +
+    "ORDER BY COUNT(t) DESC ";
+
+    if (limitString != undefined)
+        query = query + "LIMIT " + limitNumber;
+    query = query + ";";
 
     const neo4jSession = neoClient.session();
 
     let clubs = [];
     try {
-        await neo4jSession.run("MATCH (player:Player {name:'" + playerString + "'})-[:played_in {year: '2022'}]-(:Team)--(p2:Player) " +
-        "WHERE player <> p2 " +
-        "MATCH (player:Player)--(playedInTeam:Team) " +
-        "WITH COLLECT(DISTINCT p2) as playedWith, COLLECT(DISTINCT playedInTeam) as playedInAlready " +
-        "MATCH s = shortestPath((p:Player)-[:played_in]-(t:Team)) " +       //ShortestPath so as to count a player having played 4 years in a club
-        "WHERE p IN playedWith AND NOT t IN playedInAlready " +             // only as 1 club apparition
-        "RETURN t, COUNT(t) " +
-        "ORDER BY COUNT(t) DESC;")
+        await neo4jSession.run(query)
         .then(function(result){
             result.records.forEach(function(record){
                 clubs.push({
@@ -141,16 +152,27 @@ app.get('/api/players/nationalityPartners', async (req,res)=>{
     if (playerString == undefined)
         return res.status(400).send(generateError("Missing player parameter"));
 
+    const limitString = req.query.limit;
+    const limitNumber = parseInt(limitString);
+    if (limitString != undefined && (isNaN(limitNumber) || limitNumber < 1))
+        return res.status(400).send(generateError("Invalid limit value, should be a positive integer"));
+
+    let query = "MATCH (p2:Player)-[y2:played_in]-(playedInTeam:Team)-[y1:played_in]-(p1:Player {name:'" + playerString + "'})--(nTeam:NationalTeam) " +
+    "WHERE p2.nationality = p1.nationality  AND p1 <> p2 AND y1.year = y2.year " +
+    "MATCH (p2) " +
+    "WHERE NOT (p2:Player)--(nTeam:NationalTeam) " +
+    "RETURN DISTINCT p2 " +
+    "ORDER BY p2.name ";
+
+    if (limitString != undefined)
+        query = query + "LIMIT " + limitNumber;
+    query = query + ";";
+
     const neo4jSession = neoClient.session();
 
     let players = [];
     try {
-        await neo4jSession.run("MATCH (p2:Player)-[y2:played_in]-(playedInTeam:Team)-[y1:played_in]-(p1:Player {name:'" + playerString + "'})--(nTeam:NationalTeam) " +
-        "WHERE p2.nationality = p1.nationality  AND p1 <> p2 AND y1.year = y2.year " +
-        "MATCH (p2) " +
-        "WHERE NOT (p2:Player)--(nTeam:NationalTeam) " +
-        "RETURN DISTINCT p2 " +
-        "ORDER BY p2.name;")
+        await neo4jSession.run(query)
         .then(function(result){
             result.records.forEach(function(record){
                 players.push({
@@ -173,20 +195,33 @@ app.get('/api/players/degrees', async (req,res)=>{
     const playerString = req.query.player;
     if (playerString == undefined)
         return res.status(400).send(generateError("Missing player parameter"));
+
     const degreesString = req.query.degrees;
     if (degreesString == undefined)
         return res.status(400).send(generateError("Missing degrees parameter"));
     const degreesNumber = parseInt(degreesString);
     if (isNaN(degreesNumber) || degreesNumber < 1 || degreesNumber > 6)
         return res.status(400).send(generateError("Invalid degrees value, should be an integer between 1 and 6"));
+    
+    const limitString = req.query.limit;
+    const limitNumber = parseInt(limitString);
+    if (limitString != undefined && (isNaN(limitNumber) || limitNumber < 1))
+        return res.status(400).send(generateError("Invalid limit value, should be a positive integer"));
+
+    
+    let query = "MATCH (player:Player {name:'" + playerString + "'})-[*1.." + 2*degreesNumber + "]-(p2:Player) " +   //2 * porque hay 2 saltos entre players
+    "RETURN DISTINCT p2 ";
+
+    if (limitString != undefined)
+        query = query + "LIMIT " + limitNumber;
+    query = query + ";";
 
 
     const neo4jSession = neoClient.session();
 
     let players = [];
     try {
-        await neo4jSession.run("MATCH (player:Player {name:'" + playerString + "'})-[*1.." + 2*degreesNumber + "]-(p2:Player) " +   //2 * porque hay 2 saltos entre players
-        "RETURN DISTINCT p2;")
+        await neo4jSession.run(query)
         .then(function(result){
             result.records.forEach(function(record){
                 players.push({

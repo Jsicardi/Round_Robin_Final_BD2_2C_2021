@@ -307,6 +307,13 @@
             "description": "Player name that currently plays in national team to search for his partners",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The limit of players to retrieve",
+            "required": false,
+            "type": "integer"
           }
         ],
         "responses": {
@@ -315,7 +322,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Player1"
+                "$ref": "#/definitions/Player"
               },
               "example": [
                 {
@@ -362,6 +369,13 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 6
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The limit of players to retrieve",
+            "required": false,
+            "type": "integer"
           }
         ],
         "responses": {
@@ -370,7 +384,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Player1"
+                "$ref": "#/definitions/Player"
               },
               "example": [
                 {
@@ -408,6 +422,13 @@
             "description": "Player name that is looking for team recommendations",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The limit of teams to retrieve",
+            "required": false,
+            "type": "integer"
           }
         ],
         "responses": {
@@ -508,7 +529,7 @@
     }
   },
   "definitions": {
-    "Player1": {
+    "Player": {
       "type": "object",
       "required": [
         "name"
