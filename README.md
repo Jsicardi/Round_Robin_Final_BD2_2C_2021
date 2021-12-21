@@ -15,22 +15,14 @@ Importacion de datos a PostgreSQL con docker:
 Previamente debe iniciarse el contenedor y ejecutarse el siguiente comando para pasar los archivos al contenedor necesarios para la importacion (posicionado en el directorio donde se descargaron los datasets previos):
     docker cp .  my_postgres_container:/import_datasets
 
-Luego se debe ejecutar el script import_postgres.sql, habiendo previamente creado la base de datos adecuada. Este script puede ejecutarse mediante IDE como Datagrip u otros medios. Se detalla a continuacion el proceso usando la terminal y la herramienta psql:
-
-Abrir una terminal en el contenedor:
-    docker exec -ti my_potgres_container bash
-
-Posicionarse dentro del directorio creado con el comando:
-    cd import_datasets
-
-Para ejecutar el script usar el comando (importante dar permisos al directorio import_datasets para la generacion de csv)
-    psql -U my_user -d soccer_analyzer -a -f import_postgres.sql
+Luego desde su host local ejecutar import_postgres.js de la siguiente manera:
+    node import_postgres.ja
 
 Adicional a la importacion de los datos a la base, tambien se generan dos archivos players_history.csv y players_national_teams_history.csv, que se utilizaran a continuacion para la importacion a neo4j
 
 Importacion de datos a PostgreSQL local:
 
-Los pasos de la importacion se puede realizar con los mismos comandos de psql mencionados previamente, pero es importante que previamente se modifique el path de los archivos csv en import_postgres.sql, dado que estos solo trabajan con paths absolutos (los paths default son aquellos relacionados a la opcion con docker). En caso de poner el path absoluto hacia la carpeta /import_datasets, el script funciona de la misma forma 
+Los pasos de la importacion son los mismos, pero es importante que previamente se modifique el path de los archivos csv en import_postgres.js, modificando el path presente por el path absoluto de la carpeta import_datasets que contiene los archivos csv. En esta carpeta tambien se veran creados los csv resultantes para la importacion a Neo4j
 
 Importacion de datos a Neo4j con docker:
 
@@ -48,6 +40,6 @@ Ejecutar el script import_neo.js usando los comandos:
 
 Importacion de datos a Neo4j local:
 
-En este caso mover los archivos players_history.csv y players_national_teams_history.csv al directorio correspondiente de Neo4j y ejecutar luego los comandos:
+En este caso mover los archivos players_history.csv y players_national_teams_history.csv al directorio correspondiente de Neo4j (/import) y ejecutar luego los comandos:
     npm install
     node import_neo.js
