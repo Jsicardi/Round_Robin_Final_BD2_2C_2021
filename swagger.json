@@ -141,7 +141,8 @@
                   "passing_total": 81,
                   "dribbling_total": 90,
                   "defending_total": 38,
-                  "physicality_total": 60
+                  "physicality_total": 60,
+                  "team_uri": "http://localhost:3000/api/teams/10"
                 },
                 {
                   "player_id": 200260,
@@ -162,7 +163,9 @@
                   "passing_total": 82,
                   "dribbling_total": 82,
                   "defending_total": 36,
-                  "physicality_total": 66
+                  "physicality_total": 66,
+                  "team_uri": "http://localhost:3000/api/teams/245",
+                  "national_team_uri": "http://localhost:3000/api/nationalTeams/105035"
                 },
                 {
                   "player_id": 183898,
@@ -183,13 +186,70 @@
                   "passing_total": 86,
                   "dribbling_total": 88,
                   "defending_total": 48,
-                  "physicality_total": 69
+                  "physicality_total": 69,
+                  "team_uri": "http://localhost:3000/api/teams/73",
+                  "national_team_uri": "http://localhost:3000/api/nationalTeams/1369"
                 }
               ]
             }
           },
           "400": {
             "description": "Bad Request ( For example age < 0 )"
+          }
+        }
+      }
+    },
+    "/players/{id}": {
+      "get": {
+        "tags": [
+          "players"
+        ],
+        "summary": "Find a specific player",
+        "description": "Return player that matches id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the player",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "object",
+              "example": {
+                "player_id": 183898,
+                "fullname": "Ángel Di María",
+                "age": 33,
+                "photo": "https://photo.png",
+                "nationality": "Argentina",
+                "total_score": 87,
+                "positions": "['RW', 'LW']",
+                "bestPosition": "RW",
+                "team_id": 73,
+                "value_eur": 65500000,
+                "contract_until": 2023,
+                "national_team_id": 1369,
+                "preferred_foot": "Left",
+                "pace_total": 83,
+                "shooting_total": 81,
+                "passing_total": 86,
+                "dribbling_total": 88,
+                "defending_total": 48,
+                "physicality_total": 69,
+                "team_uri": "http://localhost:3000/api/teams/73",
+                "national_team_uri": "http://localhost:3000/api/nationalTeams/1369"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request ( For example invalid path parameter )"
           }
         }
       }
@@ -241,7 +301,8 @@
                   "passing_total": 81,
                   "dribbling_total": 90,
                   "defending_total": 38,
-                  "physicality_total": 60
+                  "physicality_total": 60,
+                  "team_uri": "http://localhost:3000/api/teams/10"
                 },
                 {
                   "player_id": 200260,
@@ -262,7 +323,9 @@
                   "passing_total": 82,
                   "dribbling_total": 82,
                   "defending_total": 36,
-                  "physicality_total": 66
+                  "physicality_total": 66,
+                  "team_uri": "http://localhost:3000/api/teams/245",
+                  "national_team_uri": "http://localhost:3000/api/nationalTeams/105035"
                 },
                 {
                   "player_id": 183898,
@@ -283,7 +346,9 @@
                   "passing_total": 86,
                   "dribbling_total": 88,
                   "defending_total": 48,
-                  "physicality_total": 69
+                  "physicality_total": 69,
+                  "team_uri": "http://localhost:3000/api/teams/73",
+                  "national_team_uri": "http://localhost:3000/api/nationalTeams/1369"
                 }
               ]
             }
@@ -782,6 +847,28 @@
     },
     "PlayerFull": {
       "type": "object",
+      "required": [
+        "player_id",
+        "fullname",
+        "age",
+        "photo",
+        "nationality",
+        "total_score",
+        "positions",
+        "bestPosition",
+        "team_id",
+        "value_eur",
+        "contract_until",
+        "national_team_id",
+        "preferred_foot",
+        "pace_total",
+        "shooting_total",
+        "passing_total",
+        "dribbling_total",
+        "defending_total",
+        "physicality_total",
+        "team_uri"
+      ],
       "properties": {
         "player_id": {
           "type": "integer",
@@ -864,6 +951,14 @@
         "physicality_total": {
           "type": "integer",
           "example": 60
+        },
+        "team_uri": {
+          "type": "string",
+          "example": "http://localhost:3000/api/teams/10"
+        },
+        "national_team_uri": {
+          "type": "string",
+          "example": "http://localhost:3000/api/nationalTeams/1369"
         }
       }
     },
