@@ -16,7 +16,7 @@ class TeamApi {
         }
 
 
-        let query = "SELECT league,COUNT(distinct team_id) AS team_count,ROUND(AVG(transfer_budget),2) AS average_transfer_budget,ROUND(AVG(team_average_age)) AS average_age, p_count AS national_team_players_count FROM team NATURAL JOIN player NATURAL JOIN ( " + 
+        let query = "SELECT league,COUNT(distinct team_id) AS team_count,ROUND(AVG(transfer_budget),2) AS average_transfer_budget,ROUND(AVG(team_average_age)) AS average_age, p_count AS national_team_players_count FROM team NATURAL JOIN ( " + 
         "SELECT league, COUNT(player_id) as p_count FROM team NATURAL JOIN player WHERE national_team_id IS NOT NULL GROUP BY league) as aux GROUP BY league, p_count ORDER BY ";
 
         if(params.sortBy!==undefined){

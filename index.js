@@ -20,13 +20,13 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // //BD CONNECTION FUNCTION
 
 let pgClient;
-let neoSession;
+let neoClient;
 
 startDbConnection();
 
 async function startDbConnection(){
     pgClient = await ApiUtils.getPostgreSQLConnection();
-    neoSession = await ApiUtils.getNeo4JConnection();
+    neoClient = await ApiUtils.getNeo4JConnection();
 }
 
 //ERROR MESSAGE FUNCTION
@@ -105,9 +105,11 @@ app.get('/api/teams/recommended', async (req,res)=>{
         return res.status(400).send(generateError("Missing player parameter"));
 
 
+    const neo4jSession = neoClient.session();
+
     let clubs = [];
-     await neoSession
-        .run("MATCH (player:Player {name:'" + playerString + "'})-[:played_in {year: '2022'}]-(:Team)--(p2:Player) " +
+    try {
+        await neo4jSession.run("MATCH (player:Player {name:'" + playerString + "'})-[:played_in {year: '2022'}]-(:Team)--(p2:Player) " +
         "WHERE player <> p2 " +
         "MATCH (player:Player)--(playedInTeam:Team) " +
         "WITH COLLECT(DISTINCT p2) as playedWith, COLLECT(DISTINCT playedInTeam) as playedInAlready " +
@@ -123,9 +125,14 @@ app.get('/api/teams/recommended', async (req,res)=>{
                 });
             });
         })
-        .catch(function(err){
-            console.log(err);
-        })
+    }
+    catch( err ) {
+        console.log(err);
+    }
+    finally {
+        neo4jSession.close();
+    }
+
     res.send(clubs);
 });
 
@@ -134,10 +141,11 @@ app.get('/api/players/nationalityPartners', async (req,res)=>{
     if (playerString == undefined)
         return res.status(400).send(generateError("Missing player parameter"));
 
+    const neo4jSession = neoClient.session();
 
     let players = [];
-     await neoSession
-        .run("MATCH (p2:Player)-[y2:played_in]-(playedInTeam:Team)-[y1:played_in]-(p1:Player {name:'" + playerString + "'})--(nTeam:NationalTeam) " +
+    try {
+        await neo4jSession.run("MATCH (p2:Player)-[y2:played_in]-(playedInTeam:Team)-[y1:played_in]-(p1:Player {name:'" + playerString + "'})--(nTeam:NationalTeam) " +
         "WHERE p2.nationality = p1.nationality  AND p1 <> p2 AND y1.year = y2.year " +
         "MATCH (p2) " +
         "WHERE NOT (p2:Player)--(nTeam:NationalTeam) " +
@@ -150,9 +158,14 @@ app.get('/api/players/nationalityPartners', async (req,res)=>{
                 });
             });
         })
-        .catch(function(err){
-            console.log(err);
-        })
+    }
+    catch( err ) {
+        console.log(err);
+    }
+    finally {
+        neo4jSession.close();
+    }
+
     res.send(players);
 });
 
@@ -167,9 +180,12 @@ app.get('/api/players/degrees', async (req,res)=>{
     if (isNaN(degreesNumber) || degreesNumber < 1 || degreesNumber > 6)
         return res.status(400).send(generateError("Invalid degrees value, should be an integer between 1 and 6"));
 
+
+    const neo4jSession = neoClient.session();
+
     let players = [];
-     await neoSession
-        .run("MATCH (player:Player {name:'" + playerString + "'})-[*1.." + 2*degreesNumber + "]-(p2:Player) " +   //2 * porque hay 2 saltos entre players
+    try {
+        await neo4jSession.run("MATCH (player:Player {name:'" + playerString + "'})-[*1.." + 2*degreesNumber + "]-(p2:Player) " +   //2 * porque hay 2 saltos entre players
         "RETURN DISTINCT p2;")
         .then(function(result){
             result.records.forEach(function(record){
@@ -178,9 +194,14 @@ app.get('/api/players/degrees', async (req,res)=>{
                 });
             });
         })
-        .catch(function(err){
-            console.log(err);
-        })
+    }
+    catch( err ) {
+        console.log(err);
+    }
+    finally {
+        neo4jSession.close();
+    }
+
     res.send(players);
 });
 
