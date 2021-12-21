@@ -122,5 +122,5 @@ async function importToPostgres(){
         process.exit(-1);
     });
 
-    console.log('Successfull import to PostgreSQL');
+    console.log('Successfully imported to PostgreSQL');
 }
