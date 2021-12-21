@@ -24,6 +24,10 @@
       "description": "Everything about teams"
     },
     {
+      "name": "national teams",
+      "description": "Everything about national teams"
+    },
+    {
       "name": "leagues",
       "description": "Everything about leagues"
     }
@@ -405,6 +409,126 @@
         }
       }
     },
+    "/teams": {
+      "get": {
+        "tags": [
+          "teams"
+        ],
+        "summary": "Finds teams sorted by criteria passed",
+        "description": "Return teams that fulfill the different qualities paginated",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Attribute to sort by (transferBudget - teamAverageAge)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Ascending or descending (asc - desc)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The limit of teams by page",
+            "required": false,
+            "type": "integer",
+            "default": 3
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page of teams requested",
+            "required": false,
+            "type": "integer",
+            "default": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Team"
+              },
+              "example": [
+                {
+                  "team_id": "10",
+                  "team_name": "Manchester City",
+                  "league": "English Premeier League",
+                  "transfer_budget": "176000000",
+                  "team_average_age": "23.9"
+                },
+                {
+                  "team_id": "11",
+                  "team_name": "Manchester United",
+                  "league": "English Premeier League",
+                  "transfer_budget": "175000000",
+                  "team_average_age": "25.9"
+                },
+                {
+                  "team_id": "73",
+                  "team_name": "Paris Saint-Germain",
+                  "league": "French Ligue 1",
+                  "transfer_budget": "160000000",
+                  "team_average_age": "25.9"
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request ( For example invalid query parameter )"
+          }
+        }
+      }
+    },
+    "/teams/{id}": {
+      "get": {
+        "tags": [
+          "teams"
+        ],
+        "summary": "Find a specific team",
+        "description": "Return team that matches id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the team",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "object",
+              "example": {
+                "team_id": "10",
+                "team_name": "Manchester City",
+                "league": "English Premeier League",
+                "transfer_budget": "176000000",
+                "team_average_age": "23.9"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request ( For example invalid path parameter )"
+          }
+        }
+      }
+    },
     "/teams/recommended": {
       "get": {
         "tags": [
@@ -461,6 +585,100 @@
         }
       }
     },
+    "/nationalTeams": {
+      "get": {
+        "tags": [
+          "national teams"
+        ],
+        "summary": "Finds national teams",
+        "description": "Return national teams stored in database",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The limit of national teams by page",
+            "required": false,
+            "type": "integer",
+            "default": 3
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page of national teams requested",
+            "required": false,
+            "type": "integer",
+            "default": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/NationalTeam"
+              },
+              "example": [
+                {
+                  "national_team_id": "1369",
+                  "national_team_name": "Argentina"
+                },
+                {
+                  "national_team_id": "1415",
+                  "national_team_name": "Australia"
+                },
+                {
+                  "national_team_id": "1322",
+                  "national_team_name": "Austria"
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request ( For example invalid query parameter )"
+          }
+        }
+      }
+    },
+    "/nationalTeams/{id}": {
+      "get": {
+        "tags": [
+          "national teams"
+        ],
+        "summary": "Find a specific national team",
+        "description": "Return national team that matches id",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the national team",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "object",
+              "example": {
+                "national_team_id": "1369",
+                "national_team_name": "Argentina"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request ( For example invalid path parameter )"
+          }
+        }
+      }
+    },
     "/leagues": {
       "get": {
         "tags": [
@@ -475,7 +693,14 @@
           {
             "name": "sortBy",
             "in": "query",
-            "description": "Attribute to sort by",
+            "description": "Attribute to sort by (transferBudget - teamAverageAge - nationalTeamPlayers)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Ascending or descending (asc - desc)",
             "required": false,
             "type": "string"
           },
@@ -642,6 +867,55 @@
         "timesMatched": {
           "type": "integer",
           "example": 4
+        }
+      }
+    },
+    "Team": {
+      "type": "object",
+      "required": [
+        "team_id",
+        "team_name",
+        "league",
+        "transfer_budget",
+        "team_average_age"
+      ],
+      "properties": {
+        "team_id": {
+          "type": "integer",
+          "example": "10"
+        },
+        "team_name": {
+          "type": "string",
+          "example": "Manchester City"
+        },
+        "league": {
+          "type": "string",
+          "example": "English Premeier League"
+        },
+        "transfer_budget": {
+          "type": "integer",
+          "example": "176000000"
+        },
+        "team_average_age": {
+          "type": "number",
+          "example": "23.9"
+        }
+      }
+    },
+    "NationalTeam": {
+      "type": "object",
+      "required": [
+        "national_team_id",
+        "national_team_name"
+      ],
+      "properties": {
+        "national_team_id": {
+          "type": "integer",
+          "example": "1369"
+        },
+        "national_team_name": {
+          "type": "string",
+          "example": "Argentina"
         }
       }
     },

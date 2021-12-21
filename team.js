@@ -37,15 +37,24 @@ class TeamApi {
             const sortByParam = params.sortBy.toLowerCase();
             switch(sortByParam){
                 case 'transferbudget':
-                    query = query.concat("transfer_budget DESC ");
+                    query = query.concat("transfer_budget ");
                     break;
                 case 'teamaverageage':
-                    query = query.concat("team_average_age DESC ");
+                    query = query.concat("team_average_age ");
                     break;
             }
+
+            if (params.order == 'asc')
+                query = query.concat("ASC ");
+            else
+                query = query.concat("DESC ");
         }
         else{
             query = query.concat("team_name ");
+            if (params.order == 'desc')             //By team name ascending makes more sense as default
+                query = query.concat("DESC ");
+            else
+                query = query.concat("ASC ");
         }
 
         query = query.concat(`LIMIT ${limit} OFFSET ((${page}-1) * ${limit})`);
@@ -81,19 +90,24 @@ class TeamApi {
             const sortByParam = params.sortBy.toLowerCase();
             switch(sortByParam){
                 case 'transferbudget':
-                    query = query.concat("average_transfer_budget DESC ");
+                    query = query.concat("average_transfer_budget ");
                     break;
                 case 'teamaverageage':
-                    query = query.concat("average_age DESC ");
+                    query = query.concat("average_age ");
                     break;
                 case 'nationalteamplayers':
-                    query = query.concat("national_team_players_count DESC ");
+                    query = query.concat("national_team_players_count ");
                     break;
             }
         }
         else{
-            query = query.concat("team_count DESC ");
+            query = query.concat("team_count ");
         }
+
+        if (params.order == 'asc')
+            query = query.concat("ASC ");
+        else
+            query = query.concat("DESC ");
 
         query = query.concat(`LIMIT ${limit}`);
 
@@ -123,20 +137,41 @@ class TeamApi {
 
             let i;
             let elem;
-            for(i=0;i<sortByParameters.length;i++){
+            let found = false;
+            for(i=0; !found && i<sortByParameters.length; i++){
                 elem = sortByParameters[i].toLowerCase();
                 if(sortByValue===elem.toLowerCase()){                    
+                    found = true;
+                }
+            }
+
+            //if the parameter has an invalid value, returns false
+            if (!found)
+                return false;
+
+        }
+
+        if (params.order != undefined){
+            const orderValue = params.order.toLowerCase();
+
+            //Check if the parameter is one of the order values
+
+            const topLeaguesOrderParameters = ['asc','desc'];
+
+            let i;
+            let elem;
+            for(i=0;i<topLeaguesOrderParameters.length;i++){
+                elem = topLeaguesOrderParameters[i].toLowerCase();
+                if(orderValue===elem.toLowerCase()){                 
                     return true;
                 }
             }
 
             //if the parameter has an invalid value, returns false
             return false;
-
         }
 
         //Finally, if the sortBy is undefined, it use the default order, so returns true
-
         return true;
     }
 
@@ -152,7 +187,8 @@ class TeamApi {
             case 0:
                 schema = { 
                     sortBy : Joi.string(),
-                    limit : Joi.number().min(1)
+                    limit : Joi.number().min(1),
+                    order: Joi.string()
                 };
                 break;
             case 1:
@@ -164,7 +200,8 @@ class TeamApi {
                 schema = { 
                     sortBy : Joi.string(),
                     page : Joi.number().min(1),
-                    limit : Joi.number().min(1)
+                    limit : Joi.number().min(1),
+                    order: Joi.string()
                 };
                 break;
             
