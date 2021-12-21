@@ -27,7 +27,15 @@ class ApiUtils {
     }
 
     static getNeo4JConnection(){
-        return neo4j.driver('bolt://localhost:7687',neo4j.auth.basic("neo4j", "Abcdefgh1."));
+        return neo4j.driver('bolt://localhost:7687',neo4j.auth.basic("neo4j", ""));
+    }
+
+    static getBaseUrl(req){
+        const protocol = req.protocol;
+        const host = req.hostname;
+        const port = process.env.PORT || PORT;
+      
+        return `${protocol}://${host}:${port}/api`;
     }
 
 

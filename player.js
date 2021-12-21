@@ -2,6 +2,16 @@ const Joi = require('joi');
 
 class PlayerApi{
 
+    static async getPlayerById(id,client){
+        try{
+            const results = await client.query(`SELECT player_id,fullname,age,photo_url as photo, nationality, total_score, positions, best_position, team_id, value_eur, contract_until, national_team_id, preferred_foot, pace_total, shooting_total, passing_total, dribbling_total,defending_total, physicality_total FROM player WHERE player_id=${id}`);
+            return results.rows
+        }
+        catch(e){
+            console.log(e);
+        }
+    }
+
     static async getPlayersByParams(params,client){
         
         //Define limit and page default
@@ -179,8 +189,11 @@ class PlayerApi{
         }
     }
 
-    //ValidatePlayerQueryParams
+
+    //ValidatePlayerParams
     //0-/api/players
+    //1-/api/players/similar
+    //2-/api/players/:id
     static validatePlayerPararms(params,index){
     
         let schema;
@@ -206,6 +219,12 @@ class PlayerApi{
                     page : Joi.number().min(1),
                     limit : Joi.number().min(1)
                 };
+                break;
+            case 2:
+                schema = {
+                    id : Joi.number().min(0).required()
+                };
+                break;
         }
 
 

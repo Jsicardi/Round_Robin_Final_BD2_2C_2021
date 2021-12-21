@@ -60,6 +60,7 @@ class NationalTeamApi {
                     page : Joi.number().min(1),
                     limit : Joi.number().min(1)
                 }
+                break;
     
         }
 
