@@ -4,8 +4,6 @@
 
 ### Instituto Tecnológico de Buenos Aires (ITBA)
 
-## Tabla de contenidos
-
 ## Autores
 
 - [Sicardi, Julián Nicolas](https://github.com/Jsicardi) - Legajo 60347
