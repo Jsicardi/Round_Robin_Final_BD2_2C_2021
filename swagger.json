@@ -330,13 +330,16 @@
               },
               "example": [
                 {
+                  "player_id": 170368,
                   "name": "Erik Lamela"
                 },
                 {
+                  "player_id": 205632,
                   "name": "Lucas Ocampos"
                 },
                 {
-                  "name": "José Luis Palomino"
+                  "player_id": 228711,
+                  "name": "Brian Mansilla"
                 }
               ]
             }
@@ -392,12 +395,15 @@
               },
               "example": [
                 {
+                  "player_id": 155862,
                   "name": "Sergio Ramos García"
                 },
                 {
+                  "player_id": 201399,
                   "name": "Mauro Icardi"
                 },
                 {
+                  "player_id": 231747,
                   "name": "Kylian Mbappé"
                 }
               ]
@@ -565,14 +571,17 @@
               },
               "example": [
                 {
+                  "club_id": 243,
                   "club": "Real Madrid CF",
                   "timesMatched": 4
                 },
                 {
+                  "club_id": 69,
                   "club": "AS Monaco",
                   "timesMatched": 4
                 },
                 {
+                  "club_id": 47,
                   "club": "AC Milan",
                   "timesMatched": 3
                 }
@@ -757,9 +766,14 @@
     "Player": {
       "type": "object",
       "required": [
+        "player_id",
         "name"
       ],
       "properties": {
+        "player_id": {
+          "type": "integer",
+          "example": "10"
+        },
         "name": {
           "type": "string",
           "example": "Erik Lamela"
@@ -856,10 +870,15 @@
     "TeamAndCount": {
       "type": "object",
       "required": [
+        "club_id",
         "club",
         "timesMatched"
       ],
       "properties": {
+        "club_id": {
+          "type": "integer",
+          "example": 243
+        },
         "club": {
           "type": "string",
           "example": "Real Madrid CF"

@@ -116,25 +116,6 @@ app.get('/api/teams', async(req,res)=>{
     res.send(teamRows);
 });
 
-app.get('/api/teams/:id',async(req,res)=>{
-    res.setHeader("content-type", "application/json");
-
-    //Check if the structure of the request params are ok, otherwise it returns 400
-    const {error} = TeamApi.validateTeamPararms(req.params,1);
-    if(error){
-     //400 Bad Request
-     return res.status(400).send(generateError(error.details[0].message));
-    }
-
-    const teamRows = await TeamApi.getTeamById(req.params.id,pgClient);
-
-    if(teamRows.length==0){
-        res.status(404).send(generateError('The team with the current id does not exist'));
-    }
-
-    res.send(teamRows[0]);
-
-});
 
 app.get('/api/teams/recommended', async (req,res)=>{
     const playerString = req.query.player;
@@ -168,6 +149,7 @@ app.get('/api/teams/recommended', async (req,res)=>{
         .then(function(result){
             result.records.forEach(function(record){
                 clubs.push({
+                    "club_id" : parseInt(record._fields[0].properties.team_id),
                     "club" : record._fields[0].properties.name,
                     "timesMatched" : record._fields[1].low 
                 });
@@ -183,6 +165,27 @@ app.get('/api/teams/recommended', async (req,res)=>{
 
     res.send(clubs);
 });
+
+app.get('/api/teams/:id',async(req,res)=>{
+    res.setHeader("content-type", "application/json");
+
+    //Check if the structure of the request params are ok, otherwise it returns 400
+    const {error} = TeamApi.validateTeamPararms(req.params,1);
+    if(error){
+     //400 Bad Request
+     return res.status(400).send(generateError(error.details[0].message));
+    }
+
+    const teamRows = await TeamApi.getTeamById(req.params.id,pgClient);
+
+    if(teamRows.length==0){
+        res.status(404).send(generateError('The team with the current id does not exist'));
+    }
+
+    res.send(teamRows[0]);
+
+});
+
 
 app.get('/api/nationalTeams', async(req,res)=>{
     res.setHeader("content-type", "application/json");
@@ -247,6 +250,7 @@ app.get('/api/players/nationalityPartners', async (req,res)=>{
         .then(function(result){
             result.records.forEach(function(record){
                 players.push({
+                    "player_id" : parseInt(record._fields[0].properties.player_id),
                     "name" : record._fields[0].properties.name
                 });
             });
@@ -296,6 +300,7 @@ app.get('/api/players/degrees', async (req,res)=>{
         .then(function(result){
             result.records.forEach(function(record){
                 players.push({
+                    "player_id" : parseInt(record._fields[0].properties.player_id),
                     "name" : record._fields[0].properties.name
                 });
             });

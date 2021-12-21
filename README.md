@@ -1,6 +1,6 @@
 # FInest Football Analyzer (FIFA)
 
-## 72.41 - Base de Datos II - 2º cuatrimestre 2021 - Final 9/12/2021 - Grupo Round Robin
+## 72.41 - Base de Datos II - 2º cuatrimestre 2021 - Final 22/12/2021 - Grupo Round Robin
 
 ### Instituto Tecnológico de Buenos Aires (ITBA)
 
