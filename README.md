@@ -30,11 +30,11 @@ $ npm install
 
 ## Importacion de datasets
 
-1. Descargar los datasets players_fifa22.csv.zip y teams_fifa22.csv.zip desde [https://www.kaggle.com/cashncarry/fifa-22-complete-player-dataset] y guardarlos en el directorio `import_datasets`
+1. Descargar los datasets `players_fifa22.csv.zip` y `teams_fifa22.csv.zip` desde [https://www.kaggle.com/cashncarry/fifa-22-complete-player-dataset] y guardarlos en el directorio `import_datasets`
 
-2. Descargar los datasets FIFA17_official_data.csv.zip FIFA18_official_data.csv.zip FIFA19_official_data.csv.zip FIFA20_official_data.csv.zip FIFA21_official_data.csv.zip desde [https://www.kaggle.com/cashncarry/fifa-22-complete-player-dataset] y guardarlos en el directorio `import_datasets`
+2. Descargar los datasets `FIFA17_official_data.csv.zip` `FIFA18_official_data.csv.zip` `FIFA19_official_data.csv.zip` `FIFA20_official_data.csv.zip` `FIFA21_official_data.csv.zip` desde [https://www.kaggle.com/cashncarry/fifa-22-complete-player-dataset] y guardarlos en el directorio `import_datasets`
 
-3. Descomprimir los .zip descargados(FIFAXX_official_data.csv.zip, teams_fifa22.csv.zip y players_fifa22.csv.zip) para obtener los csv 
+3. Descomprimir los .zip descargados(`FIFAXX_official_data.csv.zip`, `teams_fifa22.csv.zip` y `players_fifa22.csv.zip`) para obtener los csv 
 
 El proyecto utiliza las bases de datos PostgreSQL y Neo4J. A continuacion se detalla la importacion a ambas bases de datos, tanto para uso local (instalado localmente) como el uso de un contenedor de Docker
 
@@ -53,7 +53,7 @@ $ npm install
 $ node import_postgres.js
 ```
 
-3.  Al final de la importacion se mostrata el mensaje "Successfully imported to PostgreSQL". Adicional a la importacion de los datos a la base PostgreSQL, tambien se generan dos archivos players_history.csv y players_national_teams_history.csv, que se utilizaran a continuacion para la importacion a Neo4j. Estos se encuentran en el directorio /import_datasets dentro de su contenedor de docker.
+3.  Al final de la importacion se mostrata el mensaje "Successfully imported to PostgreSQL". Adicional a la importacion de los datos a la base PostgreSQL, tambien se generan dos archivos `players_history.csv` y `players_national_teams_history.csv`, que se utilizaran a continuacion para la importacion a Neo4j. Estos se encuentran en el directorio `/import_datasets` dentro de su contenedor de docker.
 
 > NOTA: en caso de querer modificar el path usado dentro del contenedor, ver el punto 1 de [Importacion de datos a PostgreSQL local](#importacion-de-datos-a-postgreSQL-local)
 
@@ -68,11 +68,11 @@ $ npm install
 $ node import_postgres.js
 ```
 
-3. Al final de la importacion se mostrata el mensaje "Successfully imported to PostgreSQL". Adicional a la importacion de los datos a la base PostgreSQL, tambien se generan dos archivos players_history.csv y players_national_teams_history.csv, visibles en el mismo directorio donde se ejecuto el comando anterior.
+3. Al final de la importacion se mostrata el mensaje "Successfully imported to PostgreSQL". Adicional a la importacion de los datos a la base PostgreSQL, tambien se generan dos archivos `players_history.csv` y `players_national_teams_history.csv`, visibles en el mismo directorio donde se ejecuto el comando anterior.
 
 ### Importacion de datos a Neo4j con Docker:
 
-1. Exportar los csv creados en el proceso anterior (players_history.csv y players_national_teams_history.csv) al host local posicionado en el directorio `import-datasets` del host local, usando los comandos (cambiar el path utilizado en caso que se modifico este como menciona la nota de la seccion [Importacion de datos a PostgreSQL con Docker](#importacion-de-datos-a-postgreSQL-con-docker)):
+1. Exportar los csv creados en el proceso anterior (`players_history.csv` y `players_national_teams_history.csv`) al host local posicionado en el directorio `import-datasets` del host local, usando los comandos (cambiar el path utilizado en caso que se modifico este como menciona la nota de la seccion [Importacion de datos a PostgreSQL con Docker](#importacion-de-datos-a-postgreSQL-con-docker)):
 
 ```bash 
 $ docker cp my_potgres_container:/import_datasets/players_history.csv .
@@ -96,7 +96,7 @@ $ node import_neo.js
 
 ### Importacion de datos a Neo4j local:
 
-1. Mover los archivos players_history.csv y players_national_teams_history.csv al directorio correspondiente de Neo4j (/import).
+1. Mover los archivos `players_history.csv` y `players_national_teams_history.csv` al directorio correspondiente de Neo4j (/import).
 
 2. Ejecutar luego los siguientes comandos:
     npm install
