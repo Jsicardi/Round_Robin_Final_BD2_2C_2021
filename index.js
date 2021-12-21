@@ -10,6 +10,7 @@ const app = express();
 const PlayerApi = require('./player');
 const ApiUtils = require('./apiUtils');
 const TeamApi = require('./team');
+const NationalTeamApi = require('./nationalTeam');
 
 
 app.use(express.json());
@@ -81,10 +82,10 @@ app.get('/api/leagues', async(req,res)=>{
     }
 
     //Check if the values of the query params are ok, otherwise it returns 400
-    const leagueParametersValid = TeamApi.validateTopLeaguesParams(req.query);
+    const leagueSortByParametersValid = TeamApi.validateTeamSortByParams(req.query,true);
 
 
-    if(!leagueParametersValid){
+    if(!leagueSortByParametersValid){
         return res.status(400).send(generateError('Invalid parameters for the league\'s top'));
     }
 
@@ -95,8 +96,44 @@ app.get('/api/leagues', async(req,res)=>{
 });
 
 app.get('/api/teams', async(req,res)=>{
-    const rows = await (await pgClient.query("SELECT * FROM team WHERE league='Argentina Primera División'")).rows;
-    res.send(JSON.stringify(rows));
+    res.setHeader("content-type", "application/json");
+
+     //Check if the structure of the query params are ok, otherwise it returns 400
+     const {error} = TeamApi.validateTeamPararms(req.query,2);
+     if(error){
+      //400 Bad Request
+      return res.status(400).send(generateError(error.details[0].message));
+     }
+
+    //Check if the values of the query params are ok, otherwise it returns 400
+    const teamSortByParametersValid = TeamApi.validateTeamSortByParams(req.query,false);
+ 
+    if(!teamSortByParametersValid){
+        return res.status(400).send(generateError('Invalid parameters for teams'));
+    }
+    
+    const teamRows = await TeamApi.getTeams(req.query,pgClient);
+    res.send(teamRows);
+});
+
+app.get('/api/teams/:id',async(req,res)=>{
+    res.setHeader("content-type", "application/json");
+
+    //Check if the structure of the request params are ok, otherwise it returns 400
+    const {error} = TeamApi.validateTeamPararms(req.params,1);
+    if(error){
+     //400 Bad Request
+     return res.status(400).send(generateError(error.details[0].message));
+    }
+
+    const teamRows = await TeamApi.getTeamById(req.params.id,pgClient);
+
+    if(teamRows.length==0){
+        res.status(404).send(generateError('The team with the current id does not exist'));
+    }
+
+    res.send(teamRows[0]);
+
 });
 
 app.get('/api/teams/recommended', async (req,res)=>{
@@ -145,6 +182,40 @@ app.get('/api/teams/recommended', async (req,res)=>{
     }
 
     res.send(clubs);
+});
+
+app.get('/api/nationalTeams', async(req,res)=>{
+    res.setHeader("content-type", "application/json");
+
+     //Check if the structure of the query params are ok, otherwise it returns 400
+     const {error} = NationalTeamApi.validateNationalTeamPararms(req.query,1);
+     if(error){
+      //400 Bad Request
+      return res.status(400).send(generateError(error.details[0].message));
+     }
+    
+    const nationalTeamRows = await NationalTeamApi.getNationalTeams(req.query,pgClient);
+    res.send(nationalTeamRows);
+});
+
+app.get('/api/nationalTeams/:id',async(req,res)=>{
+    res.setHeader("content-type", "application/json");
+
+    //Check if the structure of the request params are ok, otherwise it returns 400
+    const {error} = NationalTeamApi.validateNationalTeamPararms(req.params,0);
+    if(error){
+     //400 Bad Request
+     return res.status(400).send(generateError(error.details[0].message));
+    }
+
+    const teamRows = await NationalTeamApi.getNationalTeamById(req.params.id,pgClient);
+
+    if(teamRows.length==0){
+        res.status(404).send(generateError('The national team with the current id does not exist'));
+    }
+
+    res.send(teamRows[0]);
+
 });
 
 app.get('/api/players/nationalityPartners', async (req,res)=>{
