@@ -12,23 +12,20 @@ class TeamApi {
         }
     }
 
-    static async getTeams(params,client){
+    static async getTeams(params,client,pageSize){
         
         const limitParam = params.limit;
         const pageParam = params.page;
         
-        //Define limit and page default
-        const limitDefault = 3;
+        //Define page default
+
         const pageDefault = 1;
         let page = pageDefault;
-        let limit = limitDefault;
+        let limit = pageSize;
 
         //Check if page and limit query params are defined
         if(pageParam!==undefined){
             page = parseInt(pageParam);
-        }
-        if(limitParam!==undefined){
-            limit = parseInt(limitParam);
         }
 
         let query = "SELECT * FROM team ORDER BY ";
@@ -62,6 +59,17 @@ class TeamApi {
         try{
             const results = await client.query(query);
             return results.rows;
+        }
+        catch(e){
+            console.log(e);
+        }
+
+    }
+
+    static async getCountTeams(client){
+        try{
+            const results = await client.query(`SELECT COUNT(*) FROM team`);
+            return results.rows[0].count;
         }
         catch(e){
             console.log(e);

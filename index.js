@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+
 var swaggerUi = require('swagger-ui-express'),
     swaggerDocument = require('./swagger.json');
 
@@ -13,10 +14,13 @@ const TeamApi = require('./team');
 const NationalTeamApi = require('./nationalTeam');
 
 
+
 app.use(express.json());
 app.use(cors())
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+
+let PAGE_SIZE = 3;
 
 // //BD CONNECTION FUNCTION
 
@@ -43,6 +47,10 @@ function generateError( string ){
     //Player endpoints
 
 app.get('/api/players/nationalityPartners', async (req,res)=>{
+    
+    //Limit default
+    let playersLimit = 3;
+    
     const playerString = req.query.player;
     if (playerString == undefined)
         return res.status(400).send(generateError("Missing player parameter"));
@@ -59,9 +67,11 @@ app.get('/api/players/nationalityPartners', async (req,res)=>{
     "RETURN DISTINCT p2 " +
     "ORDER BY p2.name ";
 
-    if (limitString != undefined)
-        query = query + "LIMIT " + limitNumber;
-    query = query + ";";
+    if (limitString != undefined){
+        playersLimit = limitNumber;
+    }
+        
+    query = query + "LIMIT " + playersLimit + ";";
 
     const neo4jSession = neoClient.session();
 
@@ -96,14 +106,43 @@ app.get('/api/players/similar',async(req,res)=>{
      return res.status(400).send(generateError(error.details[0].message));
     }
 
-    //Return the similar players
-    const similarPlayersRows = await PlayerApi.getSimilarPlayersByName(req.query.name,req.query.page,req.query.limit,pgClient);
+   //Put the page size default
+
+   let pageSize = PAGE_SIZE;
+
+   //Check if the limit is defined, and if it is, use that as pageSize
+
+   if(req.query.limit!==undefined){
+       pageSize = parseInt(req.query.limit);
+   }
+
+   //Get the count to calculate the total pages
+
+   const playersCount = await PlayerApi.getCountPlayersSimilar(req.query.name,pgClient);
+
+   const totalPages = Math.ceil(playersCount/pageSize);
+
+   //If the page required is greater than the total, 400 is returned
+
+   if(req.query.page!==undefined && parseInt(req.query.page)>totalPages){
+       return res.status(400).send(generateError('Page number is greater than the total pages count'));
+   }
+
+    //Return the similar players with pagination
+    const similarPlayersRows = await PlayerApi.getSimilarPlayersByName(req.query.name,req.query.page,pageSize,pgClient);
     putTeamsUrisInPlayers(similarPlayersRows,ApiUtils.getBaseUrl(req));
+
+    res = ApiUtils.getPaginatedResponse(req,res,totalPages);
+
     res.send(similarPlayersRows);
 
 });
 
 app.get('/api/players/degrees', async (req,res)=>{
+    
+    //Limit default
+    let playersLimit = 100;
+    
     const playerString = req.query.player;
     if (playerString == undefined)
         return res.status(400).send(generateError("Missing player parameter"));
@@ -124,10 +163,11 @@ app.get('/api/players/degrees', async (req,res)=>{
     let query = "MATCH (player:Player {name:'" + playerString + "'})-[*1.." + 2*degreesNumber + "]-(p2:Player) " +   //2 * porque hay 2 saltos entre players
     "RETURN DISTINCT p2 ";
 
-    if (limitString != undefined)
-        query = query + "LIMIT " + limitNumber;
-    query = query + ";";
-
+    if (limitString != undefined){
+        playersLimit = limitNumber;
+    }
+        
+    query = query + "LIMIT " + playersLimit + ";";
 
     const neo4jSession = neoClient.session();
 
@@ -184,8 +224,35 @@ app.get('/api/players', async(req,res)=>{
      return res.status(400).send(generateError(error.details[0].message));
     }
 
-    const rows = await PlayerApi.getPlayersByParams(req.query,pgClient);
+    //Put the page size default
+
+    let pageSize = PAGE_SIZE;
+
+    //Check if the limit is defined, and if it is, use that as pageSize
+
+    if(req.query.limit!==undefined){
+        pageSize = parseInt(req.query.limit);
+    }
+
+    //Get the count to calculate the total pages
+
+    const playersCount = await PlayerApi.getCountPlayersByParam(req.query,pgClient);
+
+    const totalPages = Math.ceil(playersCount/pageSize);
+
+    //If the page required is greater than the total, 400 is returned
+
+    if(req.query.page!==undefined && parseInt(req.query.page)>totalPages){
+        return res.status(400).send(generateError('Page number is greater than the total pages count'));
+    }
+
+    //Make the query and return with pagination
+
+    const rows = await PlayerApi.getPlayersByParams(req.query,pgClient,pageSize);
     putTeamsUrisInPlayers(rows,ApiUtils.getBaseUrl(req));
+
+    res = ApiUtils.getPaginatedResponse(req,res,totalPages);
+
     res.send(rows);
 });
 
@@ -193,6 +260,10 @@ app.get('/api/players', async(req,res)=>{
 
 
 app.get('/api/teams/recommended', async (req,res)=>{
+    
+    //Limit default
+    let teamsLimit = 3;
+    
     const playerString = req.query.player;
     if (playerString == undefined)
         return res.status(400).send(generateError("Missing player parameter"));
@@ -212,9 +283,12 @@ app.get('/api/teams/recommended', async (req,res)=>{
     "RETURN t, COUNT(t) " +
     "ORDER BY COUNT(t) DESC ";
 
-    if (limitString != undefined)
-        query = query + "LIMIT " + limitNumber;
-    query = query + ";";
+
+    if (limitString != undefined){
+        teamsLimit = limitNumber;
+    }
+        
+    query = query + "LIMIT " + teamsLimit + ";";
 
     const neo4jSession = neoClient.session();
 
@@ -272,14 +346,41 @@ app.get('/api/teams', async(req,res)=>{
       return res.status(400).send(generateError(error.details[0].message));
      }
 
+    //Put the page size default
+
+    let pageSize = PAGE_SIZE;
+
+    //Check if the limit is defined, and if it is, use that as pageSize
+
+    if(req.query.limit!==undefined){
+        pageSize = parseInt(req.query.limit);
+    }
+
+    //Get the count to calculate the total pages
+
+    const teamsCount = await TeamApi.getCountTeams(pgClient);
+
+    const totalPages = Math.ceil(teamsCount/pageSize);
+
+    //If the page required is greater than the total, 400 is returned
+
+    if(req.query.page!==undefined && parseInt(req.query.page)>totalPages){
+        return res.status(400).send(generateError('Page number is greater than the total pages count'));
+    }
+
     //Check if the values of the query params are ok, otherwise it returns 400
     const teamSortByParametersValid = TeamApi.validateTeamSortByParams(req.query,false);
- 
+
     if(!teamSortByParametersValid){
         return res.status(400).send(generateError('Invalid parameters for teams'));
     }
-    
-    const teamRows = await TeamApi.getTeams(req.query,pgClient);
+
+    //Make the query and return with pagination
+
+    const teamRows = await TeamApi.getTeams(req.query,pgClient,pageSize);
+
+    res = ApiUtils.getPaginatedResponse(req,res,totalPages);
+
     res.send(teamRows);
 });
 
@@ -314,8 +415,35 @@ app.get('/api/nationalTeams', async(req,res)=>{
       //400 Bad Request
       return res.status(400).send(generateError(error.details[0].message));
      }
-    
-    const nationalTeamRows = await NationalTeamApi.getNationalTeams(req.query,pgClient);
+
+    //Put the page size default
+
+    let pageSize = PAGE_SIZE;
+
+    //Check if the limit is defined, and if it is, use that as pageSize
+
+    if(req.query.limit!==undefined){
+        pageSize = parseInt(req.query.limit);
+    }
+
+    //Get the count to calculate the total pages
+
+    const nationalTeamsCount = await NationalTeamApi.getCountNationalTeams(pgClient);
+
+    const totalPages = Math.ceil(nationalTeamsCount/pageSize);
+
+    //If the page required is greater than the total, 400 is returned
+
+    if(req.query.page!==undefined && parseInt(req.query.page)>totalPages){
+        return res.status(400).send(generateError('Page number is greater than the total pages count'));
+    }
+
+    //Make the query and return with pagination
+
+    const nationalTeamRows = await NationalTeamApi.getNationalTeams(req.query,pgClient,pageSize);
+
+    res = ApiUtils.getPaginatedResponse(req,res,totalPages);
+
     res.send(nationalTeamRows);
 });
 
@@ -354,10 +482,10 @@ function putTeamsUrisInPlayers(players,url){
 
     players.forEach(player=>{
         if(player.team_id!=null){
-            player.team_uri = url.concat(`/teams/${player.team_id}`);
+            player.team_uri = url.concat(`/api/teams/${player.team_id}`);
         }
         if(player.national_team_id!=null){
-            player.national_team_uri = url.concat(`/nationalTeams/${player.national_team_id}`);
+            player.national_team_uri = url.concat(`/api/nationalTeams/${player.national_team_id}`);
         }
         delete player.national_team_id;
         delete player.team_id;

@@ -12,23 +12,20 @@ class NationalTeamApi {
         }
     }
 
-    static async getNationalTeams(params,client){
+    static async getNationalTeams(params,client,pageSize){
         
-        const limitParam = params.limit;
+        // const limitParam = params.limit;
         const pageParam = params.page;
         
-        //Define limit and page default
-        const limitDefault = 3;
+        //Define page default
+
         const pageDefault = 1;
         let page = pageDefault;
-        let limit = limitDefault;
+        let limit = pageSize;
 
-        //Check if page and limit query params are defined
+        //Check if page query param is defined
         if(pageParam!==undefined){
             page = parseInt(pageParam);
-        }
-        if(limitParam!==undefined){
-            limit = parseInt(limitParam);
         }
 
         try{
@@ -39,6 +36,16 @@ class NationalTeamApi {
             console.log(e);
         }
 
+    }
+
+    static async getCountNationalTeams(client){
+        try{
+            const results = await client.query(`SELECT COUNT(*) FROM national_team`);
+            return results.rows[0].count;
+        }
+        catch(e){
+            console.log(e);
+        }
     }
 
 

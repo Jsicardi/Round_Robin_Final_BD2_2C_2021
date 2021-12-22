@@ -12,13 +12,13 @@ class PlayerApi{
         }
     }
 
-    static async getPlayersByParams(params,client){
+    static async getPlayersByParams(params,client,pageSize){
         
-        //Define limit and page default
-        const limitDefault = 3;
+        //Define page default
+
         const pageDefault = 1;
         let page = pageDefault;
-        let limit = limitDefault;
+        let limit = pageSize;
 
         let query = "SELECT player_id,fullname,age,photo_url as photo, nationality, total_score, positions, best_position, team_id, value_eur, contract_until, national_team_id, preferred_foot, pace_total, shooting_total, passing_total, dribbling_total,defending_total, physicality_total FROM player ";
         let paramsQuantity = 0;
@@ -97,9 +97,6 @@ class PlayerApi{
             paramsQuantity++;
         }
 
-        if(params.limit!==undefined){
-            limit = parseInt(params.limit);
-        }
         if(params.page!==undefined){
             page = parseInt(params.page);
         }
@@ -122,20 +119,105 @@ class PlayerApi{
         
     }
 
-    static async getSimilarPlayersByName(name,pageParam,limitParam,client){
+    static async getCountPlayersByParam(params,client){
 
-        //Define limit and page default
-        const limitDefault = 3;
+        let query = "SELECT COUNT(*) FROM player ";
+        let paramsQuantity = 0;
+        if(params.age !== undefined){
+            if(paramsQuantity===0){
+                query = query.concat("WHERE ")
+            }
+            else{
+                query = query.concat("AND ")
+            }
+            query = query.concat(`age <= ${params.age} `);
+            paramsQuantity++;
+        }
+        if(params.nationality!==undefined){
+            if(paramsQuantity===0){
+                query = query.concat("WHERE ")
+            }
+            else{
+                query = query.concat("AND ")
+            }
+            query = query.concat(`nationality = '${params.nationality}' `);
+            paramsQuantity++;
+        }
+        if(params.preferredFoot!==undefined){
+            if(paramsQuantity===0){
+                query = query.concat("WHERE ")
+            }
+            else{
+                query = query.concat("AND ")
+            }
+            query = query.concat(`preferred_foot = '${params.preferredFoot}' `);
+            paramsQuantity++;
+        }
+        if(params.valueEUR!==undefined){
+            if(paramsQuantity===0){
+                query = query.concat("WHERE ")
+            }
+            else{
+                query = query.concat("AND ")
+            }
+            query = query.concat(`value_eur <= ${params.valueEUR} `);
+            paramsQuantity++;
+        }
+        if(params.position !== undefined){
+            if(paramsQuantity===0){
+                query = query.concat("WHERE ")
+            }
+            else{
+                query = query.concat("AND ")
+            }
+            query = query.concat(`'${params.position}'=ANY(positions) `);
+            paramsQuantity++;
+        }
+        if(params.remainingTime!==undefined){
+            const currentYear = new Date().getFullYear();
+            const remainingTime = parseInt(params.remainingTime);
+
+            if(paramsQuantity===0){
+                query = query.concat("WHERE ")
+            }
+            else{
+                query = query.concat("AND ")
+            }
+            query = query.concat(`(contract_until - ${currentYear}) >=0 AND (contract_until - ${currentYear}) <= ${remainingTime} `);
+            paramsQuantity++;
+        }
+
+        if(params.name!==undefined){
+            if(paramsQuantity===0){
+                query = query.concat("WHERE ")
+            }
+            else{
+                query = query.concat("AND ")
+            }
+            query = query.concat(`metaphone('${params.name}',10) % metaphone(fullname,10) `);
+            paramsQuantity++;
+        }
+
+        try{
+            const results = await client.query(query);
+            return results.rows[0].count;
+        }
+        catch(e){
+            console.log(e);
+        }
+    }
+
+    static async getSimilarPlayersByName(name,pageParam,pageSize,client){
+
+        //Define page default
+
         const pageDefault = 1;
         let page = pageDefault;
-        let limit = limitDefault;
+        let limit = pageSize;
 
-        //Check if page and limit query params are defined
+        //Check if page query param is defined
         if(pageParam!==undefined){
             page = parseInt(pageParam);
-        }
-        if(limitParam!==undefined){
-            limit = parseInt(limitParam);
         }
 
         //Get the best result of fuzzy searching using the method 'getPlayerByParams()'
@@ -144,7 +226,7 @@ class PlayerApi{
         params.name = name;
         params.limit = 1;
 
-        const fuzzySearchResultRows = await this.getPlayersByParams(params,client);
+        const fuzzySearchResultRows = await this.getPlayersByParams(params,client,pageSize);
 
         //Use the id of the player with most similar name to do the query
 
@@ -167,6 +249,34 @@ class PlayerApi{
         }
 
 
+    }
+
+    static async getCountPlayersSimilar(name,client){
+
+        //Get the best result of fuzzy searching using the method 'getPlayerByParams()'
+
+        let params = {};
+        params.name = name;
+        params.limit = 1;
+
+        const fuzzySearchResultRows = await this.getPlayersByParams(params,client,params.limit);
+
+        //Use the id of the player with most similar name to do the query
+
+        const similarPlayerId = fuzzySearchResultRows[0].player_id;
+        
+        let query = `SELECT COUNT(*)
+        FROM (SELECT player_id, best_position, pace_total, shooting_total, passing_total,
+        dribbling_total,defending_total, physicality_total FROM player WHERE player_id=(SELECT player_id FROM player WHERE
+        player_id = ${similarPlayerId})) as aux, player p WHERE p.best_position=aux.best_position AND p.player_id<>aux.player_id`;
+
+        try{
+            const results = await client.query(query);
+            return results.rows[0].count;
+        }
+        catch(e){
+            console.log(e);
+        }
     }
 
     static async getPlayerByName(name,client){  
