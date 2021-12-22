@@ -11,7 +11,6 @@ const PlayerApi = require('./player');
 const ApiUtils = require('./apiUtils');
 const TeamApi = require('./team');
 const NationalTeamApi = require('./nationalTeam');
-const func = require('joi/lib/types/func');
 
 
 app.use(express.json());

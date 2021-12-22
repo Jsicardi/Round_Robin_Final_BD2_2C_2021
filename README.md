@@ -19,6 +19,7 @@
     - [Importacion de datos a PostgreSQL local](#importacion-de-datos-a-postgresql-local)
     - [Importacion de datos a Neo4j con Docker](#importacion-de-datos-a-neo4j-con-docker)
     - [Importacion de datos a Neo4j local](#importacion-de-datos-a-neo4j-local)
+- [Ejecucion de la API](#ejecucion-de-la-api)
 
 ## Compilacion
 
@@ -111,3 +112,49 @@ $ node import_neo.js
     node import_neo.js
 
 4. Al finalizar la importacion se mostrara el mensaje "Successfully imported to Neo4j" en la consola, dando por finalizada la importacion.
+
+## Ejecucion de la API
+
+Antes de ejecutar la API, se debe tener en cuenta que previamente deben estar activas las bases de datos de Neo4J y Postgres a utilizar ( Por ejemplo, en caso de usar contenedores de dockers para las bases de datos, estos deben estar corriendo al momento de ejecutarse la API.)
+
+Para ejecutar la misma, en el directorio raiz del proyecto se ejecutan los siguientes comandos 
+
+```bash
+$ npm install
+$ node index.js
+```
+
+Una vez ejecutados estos, la API estara disponible en el puerto 3000 por default, o en el puerto donde se haya definido por terminal la variable de entorno "PORT". Por ejemplo, si se quiere que la API se ejecute en http://localhost:5000, deben realizarse alguno de los siguientes comandos dependiendo del sistema opertativo de la maquina donde se quiera correr la misma
+
+- $env:PORT=5000 (Windows)
+- export PORT=5000 (Linux/Mac)
+
+Si no se define dicha variable de entorno, por default la API corre en http://localhost:3000
+
+Dependiendo de en que puerto se este ejecutando la misma, se debe modificar la propiedad "host" en la linea 15 del documento "swagger.json", dado que el swagger debe ejecutarse en el mismo puerto local que la API (Por default esta es "localhost:3000")
+
+Teniendo en cuenta todo esto, al correrse el comando de node mencionado previamente, en la consola se observara un mensaje que dice "Listening to port PORT . . .", siendo PORT=3000 o el definido como variable de entorno previamente, lo que indica que la API ya esta en ejecucion y a la espera de requests, las cuales se podran hacer por diversos medios.
+
+### Ejecucion por Swagger
+
+Para entrar al Swagger de la API, una vez que la misma este corriendo, en el navegador debe dirigirse a la direccion http://localhost:PORT/api/docs, teniendo en cuenta que PORT es el puerto local donde esta corriendo la API, y que en caso de ser distinto al default, este ya fue modificado en el swagger.json como se explico previamente.
+
+En dicha direccion, se observaran los distintos endpoints disponibles junto con informacion relevante de los mismos (Que retornan, que parametros recibe y de que tipo, entre otros). A su vez, en la seccion inferior se pueden observar los distintos tipos de modelos a retornar (Player, Team, etc). Cada uno de estos endpoints puede ser ejecutado mediante la opcion "Try it out".
+
+### Ejecucion por Postman
+
+En caso de disponer la aplicacion de escritorio "Postman", dirigirse a :
+
+File --> import --> Link , y en el cuadro de texto colocar el siguiente link :
+
+https://www.getpostman.com/collections/35c49877e083f921b5ce
+
+Al apretar "Continue", se le indicara que se quiere importar la coleccion "FInest Football Analyzer API" ( Lo cual es correcto), por ende para concluir la operacion de importacion de la misma debe apretar "import"
+
+En caso de no disponer de la aplicacion de escritorio, se puede utilizar la extension que posee Google Chrome. En dicho caso, habiendose descargado previamente dicha extension, es suficiente con colocar el link anterior en dicho navegador
+
+Una vez importada la coleccion, se observaran los distintos endpoints disponibles de la API, junto con sus diferentes parametros. En los caso de que el endpoint sea de la forma /api/xxxxx/{id}, debe reemplazarse el "{id}" por un numero positivo.
+
+Tener en cuenta que todos los endpoint estan con el puerto default (3000), pero en caso de ejecutarse la API en un puerto distinto, este debe modificarse en los endpoint de la coleccion.
+
+En caso de no recordar que devolvia cada endpoint o que significaba cada parametro,entre otras posibles dudas, consultar la documentacion de swagger mencionada en el item anterior (http://localhost:PORT/api/docs)
